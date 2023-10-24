@@ -48,15 +48,18 @@ namespace Kalasrapier
         /// </summary>
         public void LoadMeshDSA()
         {
-            GL.CreateBuffers(1, new int[] { _vertexBufferObject });
+            GL.CreateBuffers(1, out _vertexBufferObject);
+            Utils.LabelObject(ObjectLabelIdentifier.Buffer, _vertexBufferObject, "VBO");
+            Utils.CheckGLError("Failed to Create Buffers");
             // NOTE: glBufferData vs glBufferStorage, the last one specify that the memory size requeste wont change on
             // size, in case of changing it again with glBufferStorage, will produce an error.
             // The later also allows to better performance. You can still modify the mapped memory via glSubBufferData*
             // https://docs.gl/gl4/glBufferStorage
-            // GL.NamedBufferData(_vertexBufferObject, meshFormat.vertices.Length * sizeof(float), meshFormat.vertices, BufferUsageHint.StaticDraw);
+            // GL.NamedBufferData(_vertexBufferObject, _meshFormat.vertices.Length * sizeof(float), _meshFormat.vertices, BufferUsageHint.StaticDraw);
             GL.NamedBufferStorage(_vertexBufferObject, _meshFormat.vertices.Length * sizeof(float), _meshFormat.vertices, BufferStorageFlags.DynamicStorageBit);
+            Utils.CheckGLError("Failed To Load VBO");
 
-            GL.CreateVertexArrays(1, new int[] { _vertexArrayObject });
+            GL.CreateVertexArrays(1, out _vertexArrayObject);
             // https://docs.gl/gl4/glBindVertexBuffer
             // https://www.khronos.org/opengl/wiki/Layout_Qualifier_(GLSL)
             // vao, binding index, buffer bind, offset, stride
@@ -74,7 +77,7 @@ namespace Kalasrapier
             // appart defined in GL.VertexArrayVertexBuffer
             GL.VertexArrayAttribBinding(_vertexArrayObject, 0, 0);
 
-            GL.CreateBuffers(1, new int[] { _indexBufferObject });
+            GL.CreateBuffers(1, out _indexBufferObject);
             GL.NamedBufferStorage(_indexBufferObject, _meshFormat.indices.Length * sizeof(uint), _meshFormat.indices, BufferStorageFlags.DynamicStorageBit);
             // Link the IBO to the VAO
             // https://docs.gl/gl4/glVertexArrayElementBuffer
@@ -114,7 +117,7 @@ namespace Kalasrapier
         public void DrawMesh() {
             SetActiveMesh();
             // https://docs.gl/gl4/glDrawElements
-            GL.DrawElements(PrimitiveType.Triangles, 9, DrawElementsType.UnsignedInt, 0);
+            GL.DrawElements(PrimitiveType.Triangles, _meshFormat.nvertices, DrawElementsType.UnsignedInt, 0);
             Utils.CheckGLError("Draw Mesh");
         }
     }

@@ -1,6 +1,6 @@
 using System.Diagnostics;
-using OpenTK.Graphics.OpenGL4;
-using ErrorCode = OpenTK.Graphics.OpenGL4.ErrorCode;
+using OpenTK.Graphics.OpenGL;
+using ErrorCode = OpenTK.Graphics.OpenGL.ErrorCode;
 
 namespace Kalasrapier
 {
@@ -14,6 +14,12 @@ namespace Kalasrapier
             {
                 Debug.Print($"{title} ({i++}): {error}");
             }
+        }
+        
+        
+        public static void LabelObject(ObjectLabelIdentifier objLabelIdent, int glObject, string name)
+        {
+            GL.ObjectLabel(objLabelIdent, glObject, name.Length, name);
         }
     }
 }
