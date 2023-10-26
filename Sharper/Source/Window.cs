@@ -23,7 +23,7 @@ namespace Kalasrapier
 
         private readonly Vector3 _axis = new Vector3(1f, 1f, 1f);
 
-        private readonly float _rotSpeed = 1f;
+        private float _rotSpeed = 1f;
 
         private float _rotAngle;
 
@@ -34,7 +34,6 @@ namespace Kalasrapier
             _camera = new Camera(Vector3.UnitZ * 3, Size.X / (float)Size.Y);
             _model = new Matrix4();
             _rotAngle = 0f;
-
         }
 
         // Now, we start initializing OpenGL.
@@ -63,22 +62,23 @@ namespace Kalasrapier
         protected override void OnRenderFrame(FrameEventArgs e)
         {
             base.OnRenderFrame(e);
-            _controller.Update(this, (float)e.Time);
+            _controller?.Update(this, (float)e.Time);
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            _shader.Use();
+            _shader!.Use();
 
-            _shader.SetMatrix4("model", _model);
-            _shader.SetMatrix4("view", _camera.GetViewMatrix());
-            _shader.SetMatrix4("projection", _camera.GetProjectionMatrix());
+            _shader!.SetMatrix4("model", _model);
+            _shader!.SetMatrix4("view", _camera.GetViewMatrix());
+            _shader!.SetMatrix4("projection", _camera.GetProjectionMatrix());
 
-            _meshLoader.SetActiveMesh();
-            _meshLoader.DrawMesh();
+            _meshLoader!.SetActiveMesh();
+            _meshLoader!.DrawMesh();
 
+            ImGui.SliderFloat("Rotation Speed", ref _rotSpeed, 0.0f, 10.0f);
+            ImGui.SliderAngle("Angle", ref _rotAngle);
 
-            ImGui.ShowDemoWindow();
-            _controller.Render();
+            _controller?.Render();
 
             Utils.CheckGLError("End of frame");
             SwapBuffers();
@@ -111,7 +111,7 @@ namespace Kalasrapier
             // If we don't, the NDC will no longer be correct.
             GL.Viewport(0, 0, Size.X, Size.Y);
 
-            _controller.WindowResized(ClientSize.X, ClientSize.Y);
+            _controller?.WindowResized(ClientSize.X, ClientSize.Y);
         }
 
         protected override void OnTextInput(TextInputEventArgs e)
@@ -119,14 +119,14 @@ namespace Kalasrapier
             base.OnTextInput(e);
 
 
-            _controller.PressChar((char)e.Unicode);
+            _controller?.PressChar((char)e.Unicode);
         }
 
         protected override void OnMouseWheel(MouseWheelEventArgs e)
         {
             base.OnMouseWheel(e);
 
-            _controller.MouseScroll(e.Offset);
+            _controller?.MouseScroll(e.Offset);
         }
 
         // Now, for cleanup.

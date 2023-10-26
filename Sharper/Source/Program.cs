@@ -9,8 +9,6 @@ namespace Kalasrapier
     {
         private static void Main()
         {
-
-            Console.WriteLine("????");
             var nativeWindowSettings = new NativeWindowSettings()
             {
                API = ContextAPI.OpenGL,
