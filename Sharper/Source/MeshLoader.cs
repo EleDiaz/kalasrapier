@@ -156,7 +156,7 @@ namespace Kalasrapier
         }
 
         public void DrawMesh() {
-            SetActiveMesh();
+            // SetActiveMesh();
             // https://docs.gl/gl4/glDrawElements
             GL.DrawElements(PrimitiveType.Triangles, _meshFormat.indices.Length, DrawElementsType.UnsignedInt, 0);
             Utils.CheckGLError("Draw Mesh");

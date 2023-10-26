@@ -1,4 +1,4 @@
-#version 460
+#version 450
 
 flat in vec4 VertexColor;
 out vec4 OutFragColor;
