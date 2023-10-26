@@ -3,6 +3,7 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Graphics.OpenGL4;
 using ImGuiNET;
+using OpenTK.Mathematics;
 
 namespace Kalasrapier
 {
@@ -10,39 +11,30 @@ namespace Kalasrapier
     // OpenGL's initial hurdle is quite large, but once you get past that, things will start making more sense.
     public class Window : GameWindow
     {
-        ImGuiController _controller;
+        ImGuiController? _controller;
 
-        // Create the vertices for our triangle. These are listed in normalized device coordinates (NDC)
-        // In NDC, (0, 0) is the center of the screen.
-        // Negative X coordinates move to the left, positive X move to the right.
-        // Negative Y coordinates move to the bottom, positive Y move to the top.
-        // OpenGL only supports rendering in 3D, so to create a flat triangle, the Z coordinate will be kept as 0.
-        private readonly float[] _vertices =
-        {
-            -0.5f, -0.5f, 0.0f, // Bottom-left vertex
-             0.5f, -0.5f, 0.0f, // Bottom-right vertex
-             0.0f,  0.5f, 0.0f  // Top vertex
-        };
+        private Shader? _shader;
 
-        // These are the handles to OpenGL objects. A handle is an integer representing where the object lives on the
-        // graphics card. Consider them sort of like a pointer; we can't do anything with them directly, but we can
-        // send them to OpenGL functions that need them.
+        private MeshLoader? _meshLoader;
 
-        // What these objects are will be explained in OnLoad.
-        private int _vertexBufferObject;
+        private Camera _camera;
 
-        private int _vertexArrayObject;
+        private Matrix4 _model;
 
-        // This class is a wrapper around a shader, which helps us manage it.
-        // The shader class's code is in the Common project.
-        // What shaders are and what they're used for will be explained later in this tutorial.
-        private Shader _shader;
+        private readonly Vector3 _axis = new Vector3(1f, 1f, 1f);
 
-        private MeshLoader _meshLoader;
+        private readonly float _rotSpeed = 1f;
+
+        private float _rotAngle;
+
 
         public Window(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings)
             : base(gameWindowSettings, nativeWindowSettings)
         {
+            _camera = new Camera(Vector3.UnitZ * 3, Size.X / (float)Size.Y);
+            _model = new Matrix4();
+            _rotAngle = 0f;
+
         }
 
         // Now, we start initializing OpenGL.
@@ -52,13 +44,20 @@ namespace Kalasrapier
             _controller = new ImGuiController(ClientSize.X, ClientSize.Y);
 
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+            GL.Enable(EnableCap.CullFace);
+            GL.Enable(EnableCap.DepthTest);
 
-            _meshLoader = new MeshLoader("Meshes/simpletriangle.json");
+            // Decide which vertex will be used as ruler when interpolation is set to flat
+            GL.ProvokingVertex(ProvokingVertexMode.FirstVertexConvention);
+            _meshLoader = new MeshLoader("Meshes/cube_colors_flat_shading.json");
             _meshLoader.LoadMeshDSA();
 
             _shader = new Shader("Shaders/vert.glsl", "Shaders/frag.glsl");
 
             _shader.Use();
+
+            var posLocation = _shader.GetAttribLocation("aPosition");
+            
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
@@ -66,17 +65,19 @@ namespace Kalasrapier
             base.OnRenderFrame(e);
             _controller.Update(this, (float)e.Time);
 
-            GL.Clear(ClearBufferMask.ColorBufferBit);
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             _shader.Use();
+
+            _shader.SetMatrix4("model", _model);
+            _shader.SetMatrix4("view", _camera.GetViewMatrix());
+            _shader.SetMatrix4("projection", _camera.GetProjectionMatrix());
 
             _meshLoader.SetActiveMesh();
             _meshLoader.DrawMesh();
 
-            // GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
 
             ImGui.ShowDemoWindow();
-
             _controller.Render();
 
             Utils.CheckGLError("End of frame");
@@ -86,6 +87,13 @@ namespace Kalasrapier
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             base.OnUpdateFrame(e);
+
+            Matrix4.CreateFromAxisAngle(_axis, _rotAngle, out _model);
+            _rotAngle += _rotSpeed * (float)e.Time;
+
+            if (_rotAngle >= MathHelper.TwoPi){
+                _rotAngle = 0;
+            }
 
             var input = KeyboardState;
 
@@ -109,15 +117,15 @@ namespace Kalasrapier
         protected override void OnTextInput(TextInputEventArgs e)
         {
             base.OnTextInput(e);
-            
-            
+
+
             _controller.PressChar((char)e.Unicode);
         }
 
         protected override void OnMouseWheel(MouseWheelEventArgs e)
         {
             base.OnMouseWheel(e);
-            
+
             _controller.MouseScroll(e.Offset);
         }
 
@@ -141,12 +149,13 @@ namespace Kalasrapier
             GL.BindVertexArray(0);
             GL.UseProgram(0);
 
+            _meshLoader?.Unload();
+
             // Delete all the resources.
-            GL.DeleteBuffer(_vertexBufferObject);
-            GL.DeleteVertexArray(_vertexArrayObject);
-
-            GL.DeleteProgram(_shader.Handle);
-
+            if (_shader is not null)
+            {
+                GL.DeleteProgram(_shader.Handle);
+            }
             base.OnUnload();
         }
     }

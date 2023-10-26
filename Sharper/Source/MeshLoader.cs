@@ -6,10 +6,16 @@ namespace Kalasrapier
     public class MeshFormat
     {
         public int nvertices { get; set;}
-        public float[]? vertices { get; set;}
-        public float[]? colors { get; set;}
+        public float[] vertices { get; set;}
+        public float[] colors { get; set;}
         public int nindices { get; set;}
-        public uint[]? indices { get; set;}
+        public uint[] indices { get; set;}
+
+        public MeshFormat() {
+            vertices = new float[0];
+            colors = new float[0];
+            indices = new uint[0];
+        }
     }
 
     public class MeshLoader
@@ -42,6 +48,29 @@ namespace Kalasrapier
             _meshFormat = mesh;
         }
 
+        // Merge differents buffer into one, order vertex, color
+        private float[] mergeBuffers() {
+            var temporal = new float[_meshFormat.colors.Length + _meshFormat.vertices.Length];
+
+            Console.WriteLine("colorsL: {0} vertices: {1}", _meshFormat.colors.Length, _meshFormat.vertices.Length);
+            int vi = 0;
+            int ci = 0;
+            for (int i = 0; i < temporal.Length; i++)
+            {
+                if (i % 7 < 3) {
+                    temporal[i] = _meshFormat.vertices[vi];
+                    vi++;
+                }
+                else {
+                    temporal[i] = _meshFormat.colors[ci];
+                    ci++;
+                }
+            }
+            Console.WriteLine("colorsCI: {0} verticesVI: {1}", ci, vi);
+
+            return temporal;
+        }
+
         
         /// <summary>
         /// Load the mesh throught the DSA extension. https://www.khronos.org/opengl/wiki/Direct_State_Access
@@ -56,7 +85,10 @@ namespace Kalasrapier
             // The later also allows to better performance. You can still modify the mapped memory via glSubBufferData*
             // https://docs.gl/gl4/glBufferStorage
             // GL.NamedBufferData(_vertexBufferObject, _meshFormat.vertices.Length * sizeof(float), _meshFormat.vertices, BufferUsageHint.StaticDraw);
-            GL.NamedBufferStorage(_vertexBufferObject, _meshFormat.vertices.Length * sizeof(float), _meshFormat.vertices, BufferStorageFlags.DynamicStorageBit);
+            
+            var array = mergeBuffers();
+
+            GL.NamedBufferStorage(_vertexBufferObject, array.Length * sizeof(float), array, BufferStorageFlags.DynamicStorageBit);
             Utils.CheckGLError("Failed To Load VBO");
 
             GL.CreateVertexArrays(1, out _vertexArrayObject);
@@ -64,18 +96,24 @@ namespace Kalasrapier
             // https://www.khronos.org/opengl/wiki/Layout_Qualifier_(GLSL)
             // vao, binding index, buffer bind, offset, stride
             // You can bind several vbo to a vao through bindingIndex and bufferHandler
-            GL.VertexArrayVertexBuffer(_vertexArrayObject, 0, _vertexBufferObject, 0, 3 * sizeof(float));
+            GL.VertexArrayVertexBuffer(_vertexArrayObject, 0, _vertexBufferObject, 0, 7 * sizeof(float));
             // https://docs.gl/gl4/glEnableVertexAttribArray
             // Enabled the location 0 on shaders (binding index)
             GL.EnableVertexArrayAttrib(_vertexArrayObject, 0);
+            GL.EnableVertexArrayAttrib(_vertexArrayObject, 1);
             // https://docs.gl/gl4/glVertexAttribFormat
             // vao, attrib location, length of compounds, type, normalized integer, relative offset
+            // Vertices
             GL.VertexArrayAttribFormat(_vertexArrayObject, 0, 3, VertexAttribType.Float, false, 0);
+
+            // Colors
+            GL.VertexArrayAttribFormat(_vertexArrayObject, 1, 4, VertexAttribType.Float, false, 3 * sizeof(float));
             // https://docs.gl/gl4/glVertexAttribBinding
             // vao, attrib index, binding index
             // This allows to connect the attribute index to the binding index, which could be the same VBO or another
             // appart defined in GL.VertexArrayVertexBuffer
             GL.VertexArrayAttribBinding(_vertexArrayObject, 0, 0);
+            GL.VertexArrayAttribBinding(_vertexArrayObject, 1, 0);
 
             GL.CreateBuffers(1, out _indexBufferObject);
             GL.NamedBufferStorage(_indexBufferObject, _meshFormat.indices.Length * sizeof(uint), _meshFormat.indices, BufferStorageFlags.DynamicStorageBit);
@@ -98,8 +136,11 @@ namespace Kalasrapier
             _vertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(_vertexArrayObject);
 
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 7 * sizeof(float), 0); // vertex
+            GL.VertexAttribPointer(1, 4, VertexAttribPointerType.Float, false, 7 * sizeof(float), 3 * sizeof(float)); // colors
+
             GL.EnableVertexAttribArray(0);
+            GL.EnableVertexAttribArray(1);
 
             // The order matters, we need to have create the VAO to make those calls get save into the VAO
             _indexBufferObject = GL.GenBuffer();
@@ -117,8 +158,14 @@ namespace Kalasrapier
         public void DrawMesh() {
             SetActiveMesh();
             // https://docs.gl/gl4/glDrawElements
-            GL.DrawElements(PrimitiveType.Triangles, _meshFormat.nvertices, DrawElementsType.UnsignedInt, 0);
+            GL.DrawElements(PrimitiveType.Triangles, _meshFormat.indices.Length, DrawElementsType.UnsignedInt, 0);
             Utils.CheckGLError("Draw Mesh");
+        }
+
+        public void Unload() {
+            GL.DeleteBuffer(_vertexBufferObject);
+            GL.DeleteBuffer(_indexBufferObject);
+            GL.DeleteVertexArray(_vertexArrayObject);
         }
     }
 }

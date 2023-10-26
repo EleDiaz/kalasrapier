@@ -1,8 +1,9 @@
 #version 460
 
-out vec4 outputColor;
+flat in vec4 VertexColor;
+out vec4 OutFragColor;
 
 void main()
 {
-    outputColor = vec4(1.0, 1.0, 0.0, 1.0);
+    OutFragColor = VertexColor;
 }
