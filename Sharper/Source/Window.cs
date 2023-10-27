@@ -94,6 +94,7 @@ namespace Kalasrapier
 
             ImGui.SliderFloat("Rotation Speed", ref _rotSpeed, 0.0f, 10.0f);
             ImGui.SliderAngle("Angle", ref _rotAngle);
+            ImGui.SliderAngle("Camera yaw", ref _camera._yaw);
 
             _imGuiController?.Render();
 
@@ -104,11 +105,14 @@ namespace Kalasrapier
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             base.OnUpdateFrame(e);
-            _controller.UpdateState(KeyboardState, MouseState, e);
+            _controller.UpdateState(this, e);
 
             Vector3 movement = _controller.GetMovement();
             Vector2 angles = _controller.GetArmDirection();
-            _camera.Position += movement;
+
+            // TODO: We are negating the Z axis changing the Opengl forward, there is something weird. See Utils.cs
+            // This change could be happening in the projection view?
+            _camera.Position += _camera.Front * -movement.Z + _camera.Right * movement.X + _camera.Up * movement.Y;
             _camera.Yaw += angles.X;
             _camera.Pitch += angles.Y;
 
