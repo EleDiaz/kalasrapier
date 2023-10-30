@@ -23,7 +23,7 @@ namespace Kalasrapier
         private float _pitch;
 
         // Rotation around the Y axis (radians)
-        private float _yaw = -MathHelper.PiOver2; // Without this, you would be started rotated 90 degrees right.
+        public float _yaw = -MathHelper.PiOver2; // Without this, you would be started rotated 90 degrees right.
 
         // The field of view of the camera (radians)
         private float _fov = MathHelper.PiOver2;

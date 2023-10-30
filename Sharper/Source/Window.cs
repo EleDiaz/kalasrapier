@@ -11,9 +11,17 @@ namespace Kalasrapier
     // OpenGL's initial hurdle is quite large, but once you get past that, things will start making more sense.
     public class Window : GameWindow
     {
-        ImGuiController? _controller;
+        ImGuiController? _imGuiController;
 
         private Shader? _shader;
+
+        private Controller _controller;
+
+        // TODO: Remove
+        private Level _level = new Level();
+
+        // TODO: Remove
+        private readonly string _levelFilePath = "mesh.json";
 
         private MeshLoader? _meshLoader;
 
@@ -21,7 +29,7 @@ namespace Kalasrapier
 
         private Matrix4 _model;
 
-        private readonly Vector3 _axis = new Vector3(1f, 1f, 1f);
+        private readonly Vector3 _axis = new Vector3(1f, 1f, 0f);
 
         private float _rotSpeed = 1f;
 
@@ -34,13 +42,22 @@ namespace Kalasrapier
             _camera = new Camera(Vector3.UnitZ * 3, Size.X / (float)Size.Y);
             _model = new Matrix4();
             _rotAngle = 0f;
+            _controller = new Controller();
         }
+
+        // TODO: Remove
+        protected void InitializeLevel()
+        {
+            _level=new Level(_levelFilePath);
+            _level.LoadLevel();
+        }
+
 
         // Now, we start initializing OpenGL.
         protected override void OnLoad()
         {
             base.OnLoad();
-            _controller = new ImGuiController(ClientSize.X, ClientSize.Y);
+            _imGuiController = new ImGuiController(ClientSize.X, ClientSize.Y);
 
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             GL.Enable(EnableCap.CullFace);
@@ -62,7 +79,7 @@ namespace Kalasrapier
         protected override void OnRenderFrame(FrameEventArgs e)
         {
             base.OnRenderFrame(e);
-            _controller?.Update(this, (float)e.Time);
+            _imGuiController?.Update(this, (float)e.Time);
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
@@ -77,8 +94,9 @@ namespace Kalasrapier
 
             ImGui.SliderFloat("Rotation Speed", ref _rotSpeed, 0.0f, 10.0f);
             ImGui.SliderAngle("Angle", ref _rotAngle);
+            ImGui.SliderAngle("Camera yaw", ref _camera._yaw);
 
-            _controller?.Render();
+            _imGuiController?.Render();
 
             Utils.CheckGLError("End of frame");
             SwapBuffers();
@@ -87,6 +105,16 @@ namespace Kalasrapier
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             base.OnUpdateFrame(e);
+            _controller.UpdateState(this, e);
+
+            Vector3 movement = _controller.GetMovement();
+            Vector2 angles = _controller.GetArmDirection();
+
+            // TODO: We are negating the Z axis changing the Opengl forward, there is something weird. See Utils.cs
+            // This change could be happening in the projection view?
+            _camera.Position += _camera.Front * -movement.Z + _camera.Right * movement.X + _camera.Up * movement.Y;
+            _camera.Yaw += angles.X;
+            _camera.Pitch += angles.Y;
 
             Matrix4.CreateFromAxisAngle(_axis, _rotAngle, out _model);
             _rotAngle += _rotSpeed * (float)e.Time;
@@ -111,7 +139,7 @@ namespace Kalasrapier
             // If we don't, the NDC will no longer be correct.
             GL.Viewport(0, 0, ClientSize.X, ClientSize.Y);
 
-            _controller?.WindowResized(ClientSize.X, ClientSize.Y);
+            _imGuiController?.WindowResized(ClientSize.X, ClientSize.Y);
         }
 
         protected override void OnTextInput(TextInputEventArgs e)
@@ -119,14 +147,14 @@ namespace Kalasrapier
             base.OnTextInput(e);
 
 
-            _controller?.PressChar((char)e.Unicode);
+            _imGuiController?.PressChar((char)e.Unicode);
         }
 
         protected override void OnMouseWheel(MouseWheelEventArgs e)
         {
             base.OnMouseWheel(e);
 
-            _controller?.MouseScroll(e.Offset);
+            _imGuiController?.MouseScroll(e.Offset);
         }
 
         // Now, for cleanup.
