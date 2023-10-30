@@ -56,7 +56,7 @@ namespace Kalasrapier
             _shader.Use();
 
             var posLocation = _shader.GetAttribLocation("aPosition");
-            
+
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
@@ -109,7 +109,7 @@ namespace Kalasrapier
 
             // When the window gets resized, we have to call GL.Viewport to resize OpenGL's viewport to match the new size.
             // If we don't, the NDC will no longer be correct.
-            GL.Viewport(0, 0, Size.X, Size.Y);
+            GL.Viewport(0, 0, ClientSize.X, ClientSize.Y);
 
             _controller?.WindowResized(ClientSize.X, ClientSize.Y);
         }
@@ -132,7 +132,7 @@ namespace Kalasrapier
         // Now, for cleanup.
         // You should generally not do cleanup of opengl resources when exiting an application,
         // as that is handled by the driver and operating system when the application exits.
-        // 
+        //
         // There are reasons to delete opengl resources, but exiting the application is not one of them.
         // This is provided here as a reference on how resource cleanup is done in opengl, but
         // should not be done when exiting the application.
