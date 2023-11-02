@@ -39,7 +39,7 @@ namespace Kalasrapier
         public Window(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings)
             : base(gameWindowSettings, nativeWindowSettings)
         {
-            _camera = new Camera(Vector3.UnitZ * 3, Size.X / (float)Size.Y);
+            _camera = new Camera(Vector3.UnitZ * 3, ClientSize.X / (float)ClientSize.Y);
             _model = new Matrix4();
             _rotAngle = 0f;
             _controller = new Controller();
@@ -91,6 +91,11 @@ namespace Kalasrapier
 
             _meshLoader!.SetActiveMesh();
             _meshLoader!.DrawMesh();
+            // INFO: para renderizar con varios materiales se utiliza varias llamadas a draw cambiando el parámetro de 
+            // diffuse color (uniform) La llamada pinta solo aquellos indices que tengan asignado el material
+            // jugando con el offset, ojo puntero al primer indece del array de indices pasar por ref
+            // GL.DrawElements(PrimitiveType.Triangles,nelements,DrawElementsType.UnsignedInt, ref indexData[slotData[i]]);
+
 
             ImGui.SliderFloat("Rotation Speed", ref _rotSpeed, 0.0f, 10.0f);
             ImGui.SliderAngle("Angle", ref _rotAngle);
@@ -113,6 +118,7 @@ namespace Kalasrapier
             // TODO: We are negating the Z axis changing the Opengl forward, there is something weird. See Utils.cs
             // This change could be happening in the projection view?
             _camera.Position += _camera.Front * -movement.Z + _camera.Right * movement.X + _camera.Up * movement.Y;
+            // TODO: This generates a problem due to the rotation lock.
             _camera.Yaw += angles.X;
             _camera.Pitch += angles.Y;
 

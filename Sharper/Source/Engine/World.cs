@@ -173,6 +173,8 @@ namespace Kalasrapier
             _level = new Level();
         }
 
+        // Para el tema de los materiales aquí quizás haya que tocar el Index. Y alguna info addicional de 
+        // los materiales
         public void InitLevel()
         {
             float[] vertexArray;

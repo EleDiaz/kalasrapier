@@ -4,6 +4,22 @@ import json
 
 def extract_mesh_data(obj):
     mesh_data = {}
+    default_material = {
+        "name": "default",
+        "diffuse_color": [1.0, 1.0, 1.0, 1.0]
+    }
+
+    mesh_data["materials"] = [default_material]
+    indexdata = {}
+    slots = []
+    material_slots=object.material_slots
+    for ms in material_slots:
+        indexdata[ms.material.name]=[]
+        slots.append(ms.material.name)
+        mat={}
+        mat["name"]=ms.material.name
+        mat["diffuse_color"]=[v for v in ms.material.diffuse_color]
+        mesh_data["materials"].append(mat)
 
     vertices = obj.data.vertices
     # mesh_data["nvertex"] = len(vertices)
@@ -66,6 +82,6 @@ new_path = os.path.join(dir_path, "mesh.json")
 print(new_path)
 
 with open(new_path, "w") as file:
-    json.dump(meshes, file)
+    json.dump(meshes, file, indent=4)
 
 print("Finalizada la escritura de los datos")

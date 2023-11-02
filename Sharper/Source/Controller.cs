@@ -17,6 +17,9 @@ namespace Kalasrapier
         private FrameEventArgs _frameEvents;
         private Vector3 _movementInput = new Vector3();
         private Vector2 _armAngles = new Vector2();
+
+        private Angles2D _armAnglesTarge = new Angles2D();
+
         private float _deltaTime;
         private bool _active = false;
 
@@ -41,6 +44,7 @@ namespace Kalasrapier
 
         public void UpdateState(Window window, FrameEventArgs eventArgs)
         {
+            //window.ClientSize
             var keyboardState = window.KeyboardState;
             var mouseState = window.MouseState;
             _frameEvents = eventArgs;
@@ -48,12 +52,15 @@ namespace Kalasrapier
             _movementInput = Vector3.Zero;
             _armAngles = Vector2.Zero;
 
-            if (keyboardState.IsKeyPressed(Keys.Space)) {
-                if (window.CursorState == CursorState.Normal) {
+            if (keyboardState.IsKeyPressed(Keys.Space))
+            {
+                if (window.CursorState == CursorState.Normal)
+                {
                     window.CursorState = CursorState.Grabbed;
                     _active = true;
                 }
-                else {
+                else
+                {
                     window.CursorState = CursorState.Normal;
                     _active = false;
                 }
@@ -75,7 +82,39 @@ namespace Kalasrapier
             if (keyboardState.IsKeyDown(Keys.Q))
                 _movementInput = -Utils.UP;
 
+            // This can be modified to keep some relation to the windows size.
+            // For example: a 8k windows will its mouse have bigger delta?
+            // In that case we would need to adjust the sensibility due to this parameter.
             _armAngles = new Vector2(mouseState.Delta.X, -mouseState.Delta.Y);
+
+            /*
+            if (_mouseState.IsButtonDown(MouseButton.Left))
+            {
+                float deltaX, deltaY;
+                // Normalize to device
+                float mx = (float)_mouseState.X / _hRes;
+                float my = (float)_mouseState.Y / _vRes;
+
+                if (_firstMouse)
+                {
+                    _lastMouse = new Vector2(mx, my);
+                    _firstMouse = false;
+                }
+                else
+                {
+                    deltaX = _lastMouse.X - mx;
+                    deltaY = _lastMouse.Y - my;
+
+                    _lastMouse = new Vector2(mx, my);
+                    _armAnglesTarget = _armAnglesTarget + new Angles2D(deltaX, deltaY) * _deltaTime * MouseSensitivity;
+
+                    _armAngles = _armAngles + ArmRate * (_armAnglesTarget - _armAngles);
+                }
+            }
+            else
+                _firstMouse = true;
+            */
+
         }
     }
 }

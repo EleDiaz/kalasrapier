@@ -13,6 +13,7 @@ namespace Kalasrapier
         UV = 2,
         NORMALS = 4,
         INDICES = 8,
+        WEIGHTS = 16,
     }
 
     static public class MeshInfoMethods {
@@ -62,6 +63,9 @@ namespace Kalasrapier
         public float[]? normals { get; set;}
         // uints
         public uint[]? indices { get; set;}
+
+        public uint[]? indicesPerMaterial { get; set;}
+
 
         public MeshFormat() {
             vertices = new float[0];
