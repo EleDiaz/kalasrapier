@@ -3,18 +3,73 @@ using OpenTK.Graphics.OpenGL;
 
 namespace Kalasrapier
 {
+    [Flags]
+    public enum MeshInfo {
+        VERTICES = 0,
+        COLORS = 1,
+        UV = 2,
+        NORMALS = 4,
+        INDICES = 8,
+    }
+
+
     public class MeshFormat
     {
-        public int nvertices { get; set;}
+        // 3 floats
         public float[] vertices { get; set;}
-        public float[] colors { get; set;}
-        public int nindices { get; set;}
-        public uint[] indices { get; set;}
+        // 2 floats
+        public float[]? uv { get; set;}
+        // Colors are assume to be 4 floats
+        public float[]? colors { get; set;}
+        // 3 floats
+        public float[]? normals { get; set;}
+        // uints
+        public uint[]? indices { get; set;}
 
         public MeshFormat() {
             vertices = new float[0];
-            colors = new float[0];
-            indices = new uint[0];
+        }
+
+        public int StrideSize(MeshInfo info) {
+            return ComponentSize(MeshInfo.VERTICES) 
+                + (info.HasFlag(MeshInfo.COLORS)? ComponentSize(MeshInfo.COLORS): 0)
+                + (info.HasFlag(MeshInfo.UV)? ComponentSize(MeshInfo.UV): 0)
+                + (info.HasFlag(MeshInfo.NORMALS)? ComponentSize(MeshInfo.NORMALS): 0);
+        }
+
+        public int ComponentSize(MeshInfo info) {
+            switch (info)
+            {
+                case MeshInfo.VERTICES:
+                    return 3;
+                case MeshInfo.COLORS:
+                    return 4;
+                case MeshInfo.NORMALS:
+                    return 3;
+                case MeshInfo.UV:
+                    return 2;
+                default:
+                    return 0;
+            }
+        }
+
+        public MeshInfo GetInfo() {
+            var flags = MeshInfo.VERTICES;
+            if (colors is not null)
+                flags |= MeshInfo.COLORS;
+            if (uv is not null)
+                flags |= MeshInfo.UV;
+            if (normals is not null)
+                flags |= MeshInfo.NORMALS;
+            if (indices is not null)
+                flags |= MeshInfo.INDICES;
+
+            return flags;
+        }
+
+        // TODO: validate size of each component
+        public bool Validate() {
+            return true;
         }
     }
 
