@@ -15,7 +15,6 @@ namespace Kalasrapier
     public class Controller : IController
     {
         private FrameEventArgs _frameEvents;
-        // TODO: Vector2
         private Vector3 _movementInput = new Vector3();
         private Vector2 _armAngles = new Vector2();
         private float _deltaTime;

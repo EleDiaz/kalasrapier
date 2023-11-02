@@ -52,8 +52,6 @@ def extract_mesh_data(obj):
     return mesh_data
 
 
-
-
 sobjects = bpy.context.selected_objects
 
 meshes = []

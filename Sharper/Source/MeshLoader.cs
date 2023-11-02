@@ -3,6 +3,9 @@ using OpenTK.Graphics.OpenGL;
 
 namespace Kalasrapier
 {
+    /// <summary>
+    /// This enum defines the accepted format for each component
+    /// </summary>
     [Flags]
     public enum MeshInfo {
         VERTICES = 0,
@@ -10,6 +13,40 @@ namespace Kalasrapier
         UV = 2,
         NORMALS = 4,
         INDICES = 8,
+    }
+
+    static public class MeshInfoMethods {
+        public static int StrideSize(this MeshInfo info) {
+            return ComponentSize(MeshInfo.VERTICES) 
+                + (info.HasFlag(MeshInfo.COLORS)? ComponentSize(MeshInfo.COLORS): 0)
+                + (info.HasFlag(MeshInfo.UV)? ComponentSize(MeshInfo.UV): 0)
+                + (info.HasFlag(MeshInfo.NORMALS)? ComponentSize(MeshInfo.NORMALS): 0);
+        }
+
+        // TODO: In our implementation all the subcomponents has a size of 4 bytes (floats and uint) for simplicity i
+        // will keep like that
+        public static int StrideOffset(this MeshInfo info) {
+            return info.StrideSize() * sizeof(float);
+        }
+
+        /// <summary>
+        /// Size on bytes of each component.
+        /// </summary>
+        public static int ComponentSize(this MeshInfo info) {
+            switch (info)
+            {
+                case MeshInfo.VERTICES:
+                    return 3;
+                case MeshInfo.COLORS:
+                    return 4;
+                case MeshInfo.NORMALS:
+                    return 3;
+                case MeshInfo.UV:
+                    return 2;
+                default:
+                    return 0;
+            }
+        }
     }
 
 
@@ -28,29 +65,6 @@ namespace Kalasrapier
 
         public MeshFormat() {
             vertices = new float[0];
-        }
-
-        public int StrideSize(MeshInfo info) {
-            return ComponentSize(MeshInfo.VERTICES) 
-                + (info.HasFlag(MeshInfo.COLORS)? ComponentSize(MeshInfo.COLORS): 0)
-                + (info.HasFlag(MeshInfo.UV)? ComponentSize(MeshInfo.UV): 0)
-                + (info.HasFlag(MeshInfo.NORMALS)? ComponentSize(MeshInfo.NORMALS): 0);
-        }
-
-        public int ComponentSize(MeshInfo info) {
-            switch (info)
-            {
-                case MeshInfo.VERTICES:
-                    return 3;
-                case MeshInfo.COLORS:
-                    return 4;
-                case MeshInfo.NORMALS:
-                    return 3;
-                case MeshInfo.UV:
-                    return 2;
-                default:
-                    return 0;
-            }
         }
 
         public MeshInfo GetInfo() {

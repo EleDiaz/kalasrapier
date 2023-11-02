@@ -27,6 +27,14 @@ namespace Kalasrapier
             var meshesData = File.ReadAllText(_meshFilePath);
             _levelMeshes = JsonSerializer.Deserialize<List<MeshFormat>>(meshesData, _jsonOptions);
         }
+        
+        public int AmountOfMeshes() {
+            return _levelMeshes!.Count;
+        }
+
+        public MeshInfo GetInfo(int index) {
+            return _levelMeshes![index].GetInfo();
+        }
 
         public void GetVertexArray(int index, out float[] vertexData)
         {
@@ -39,17 +47,17 @@ namespace Kalasrapier
 
             var size = mesh.vertices.Length + mesh.colors?.Length ?? 0 + mesh.uv?.Length ?? 0 + mesh.normals?.Length ?? 0;
 
-            var strideSize = mesh.StrideSize(info);
+            var strideSize = info.StrideSize();
 
             vertexData = new float[size];
             int vI = 0;
-            var vertexOffset = mesh.ComponentSize(MeshInfo.VERTICES);
+            var vertexOffset = MeshInfo.VERTICES.ComponentSize();
             int cI = 0;
-            var colorOffset = vertexOffset + (info.HasFlag(MeshInfo.COLORS) ? mesh.ComponentSize(MeshInfo.COLORS) : 0);
+            var colorOffset = vertexOffset + (info.HasFlag(MeshInfo.COLORS) ? MeshInfo.COLORS.ComponentSize() : 0);
             int uvI = 0;
-            var uvOffset = colorOffset + (info.HasFlag(MeshInfo.UV) ? mesh.ComponentSize(MeshInfo.UV) : 0);
+            var uvOffset = colorOffset + (info.HasFlag(MeshInfo.UV) ? MeshInfo.UV.ComponentSize() : 0);
             int nI = 0;
-            var normalOffset = uvOffset + (info.HasFlag(MeshInfo.NORMALS) ? mesh.ComponentSize(MeshInfo.NORMALS) : 0);
+            var normalOffset = uvOffset + (info.HasFlag(MeshInfo.NORMALS) ? MeshInfo.NORMALS.ComponentSize() : 0);
 
             for (int i = 0; i < vertexData.Length; i++)
             {
