@@ -2,57 +2,53 @@ import bpy
 import os
 import json
 
+
 def extract_mesh_data(obj):
     mesh_data = {}
-    default_material = {
-        "name": "default",
-        "diffuse_color": [1.0, 1.0, 1.0, 1.0]
-    }
 
-    mesh_data["materials"] = [default_material]
-    indexdata = {}
-    slots = []
-    material_slots=object.material_slots
-    for ms in material_slots:
-        indexdata[ms.material.name]=[]
-        slots.append(ms.material.name)
-        mat={}
-        mat["name"]=ms.material.name
-        mat["diffuse_color"]=[v for v in ms.material.diffuse_color]
-        mesh_data["materials"].append(mat)
-
+    ### VERTICES & NORMALS
     vertices = obj.data.vertices
-    # mesh_data["nvertex"] = len(vertices)
     operated_vertices = []
     operated_normals = []
     for vert in vertices:
         coord = vert.co
-        operated_vertices.append(coord[0])
-        operated_vertices.append(coord[2])
-        operated_vertices.append(-coord[1])
+        operated_vertices += [coord[0], coord[2], -coord[1]]
         normal = vert.normal
-        operated_normals.append(normal[0])
-        operated_normals.append(normal[2])
-        operated_normals.append(-normal[1])
+        operated_normals += [normal[0], normal[2], -normal[1]]
 
     mesh_data["vertexdata"] = operated_vertices
     mesh_data["normaldata"] = operated_normals
 
     mesh_data["colordata"] = [1.0, 0.0, 0.0, 1.0] * len(vertices)
+    mesh_data["weightdata"] = [1.0] * len(vertices)
+
+    ### MATERIALS
+    default_material = {"name": "default", "diffuse_color": [1.0, 1.0, 1.0, 1.0]}
+
+    mesh_data["materials"] = [default_material]
+    material_slots = obj.material_slots
+    for ms in material_slots:
+        # possible texture reference???
+        mat = {
+            "name": ms.material.name,
+            "diffuse_color": [v for v in ms.material.diffuse_color],
+        }
+        mesh_data["materials"].append(mat)
+
+    ### INDECES (and materials associated)
+    mesh_data["indexdata"] = [[]] * (len(mesh_data["materials"]) - 1)
 
     polygons = obj.data.polygons
-    # nindices = len(polygons) * 3
-    # mesh_data["nindex"] = nindices
-
-    operated_indices = []
     for polygon in polygons:
         verts = polygon.vertices
-        operated_indices.append(verts[0])
-        operated_indices.append(verts[2])
-        operated_indices.append(verts[1])
+        if len(mesh_data["materials"]) == 1: # No materials at all
+            slot = 0
+        else:
+            slot = polygon.material_index + 1 # Skip the default material
+        # TODO: review if it's necessary to keep changing the vertices ccw?
+        mesh_data["indexdata"][slot] += [verts[0], verts[2], verts[1]]
 
-    mesh_data["indexdata"] = operated_indices
-
+    ### UV (TODO: maybe we need to see how this works with several materials)
     operate_uvs = [0.0, 0.0] * len(vertices)
     ob_loops = obj.data.loops
     uv_layer = obj.data.uv_layers.active.data

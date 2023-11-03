@@ -1,0 +1,11 @@
+{
+  "meshes": [],
+  "actors": [],
+  "playerStart": {
+    "position": [0, 0, 0],
+    "orientation": {
+      "axis": [1, 0, 0],
+      "angle": 0
+    }
+  }
+}

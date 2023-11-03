@@ -1,6 +1,7 @@
-
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
+
+using Kalasrapier.Engine.ImportJson;
 
 namespace Kalasrapier
 {
@@ -23,7 +24,7 @@ namespace Kalasrapier
 
         private int _indexLenght;
 
-        private MeshInfo _meshInfo;
+        private VertexInfo _meshInfo;
 
         private Matrix4 _model;
 
@@ -32,7 +33,7 @@ namespace Kalasrapier
         /// <summary>
         /// Load the mesh throught the DSA extension. https://www.khronos.org/opengl/wiki/Direct_State_Access
         /// </summary>
-        public void LoadMeshDSA(ref float[] vertexArray, ref uint[] indexArray, MeshInfo info)
+        public void LoadMeshDSA(ref float[] vertexArray, ref uint[] indexArray, VertexInfo info)
         {
             GL.CreateBuffers(1, out _vertexBufferObject);
             Utils.LabelObject(ObjectLabelIdentifier.Buffer, _vertexBufferObject, "VBO");
@@ -54,9 +55,9 @@ namespace Kalasrapier
             // TODO
             GL.VertexArrayVertexBuffer(_vertexArrayObject, 0, _vertexBufferObject, 0, info.StrideOffset());
 
-            var offsetHelper = MeshInfo.VERTICES;
+            var offsetHelper = VertexInfo.VERTICES;
             var attributeICounter = 0;
-            if (!info.HasFlag(MeshInfo.VERTICES))
+            if (!info.HasFlag(VertexInfo.VERTICES))
             {
                 throw new Exception("No vertices");
             }
@@ -66,7 +67,7 @@ namespace Kalasrapier
             // https://docs.gl/gl4/glVertexAttribFormat
             // vao, attrib location, length of compounds, type, normalized integer, relative offset
             // Vertices
-            GL.VertexArrayAttribFormat(_vertexArrayObject, attributeICounter, MeshInfo.VERTICES.StrideSize(), VertexAttribType.Float, false, 0);
+            GL.VertexArrayAttribFormat(_vertexArrayObject, attributeICounter, VertexInfo.VERTICES.StrideSize(), VertexAttribType.Float, false, 0);
 
             // https://docs.gl/gl4/glVertexAttribBinding
             // vao, attrib index, binding index
@@ -74,28 +75,28 @@ namespace Kalasrapier
             // appart defined in GL.VertexArrayVertexBuffer
             GL.VertexArrayAttribBinding(_vertexArrayObject, attributeICounter, 0);
 
-            if (info.HasFlag(MeshInfo.COLORS))
+            if (info.HasFlag(VertexInfo.COLORS))
             {
                 GL.EnableVertexArrayAttrib(_vertexArrayObject, attributeICounter);
-                GL.VertexArrayAttribFormat(_vertexArrayObject, attributeICounter, MeshInfo.COLORS.StrideSize(), VertexAttribType.Float, false, offsetHelper.StrideOffset());
+                GL.VertexArrayAttribFormat(_vertexArrayObject, attributeICounter, VertexInfo.COLORS.StrideSize(), VertexAttribType.Float, false, offsetHelper.StrideOffset());
                 GL.VertexArrayAttribBinding(_vertexArrayObject, attributeICounter, 0);
-                offsetHelper |= MeshInfo.COLORS;
+                offsetHelper |= VertexInfo.COLORS;
                 attributeICounter++;
             }
 
-            if (info.HasFlag(MeshInfo.UV)) {
+            if (info.HasFlag(VertexInfo.UV)) {
                 GL.EnableVertexArrayAttrib(_vertexArrayObject, attributeICounter);
-                GL.VertexArrayAttribFormat(_vertexArrayObject, attributeICounter, MeshInfo.UV.StrideSize(), VertexAttribType.Float, false, offsetHelper.StrideOffset());
+                GL.VertexArrayAttribFormat(_vertexArrayObject, attributeICounter, VertexInfo.UV.StrideSize(), VertexAttribType.Float, false, offsetHelper.StrideOffset());
                 GL.VertexArrayAttribBinding(_vertexArrayObject, attributeICounter, 0);
-                offsetHelper |= MeshInfo.UV;
+                offsetHelper |= VertexInfo.UV;
                 attributeICounter++;
             }
 
-            if (info.HasFlag(MeshInfo.NORMALS)) {
+            if (info.HasFlag(VertexInfo.NORMALS)) {
                 GL.EnableVertexArrayAttrib(_vertexArrayObject, attributeICounter);
-                GL.VertexArrayAttribFormat(_vertexArrayObject, attributeICounter, MeshInfo.NORMALS.StrideSize(), VertexAttribType.Float, false, offsetHelper.StrideOffset());
+                GL.VertexArrayAttribFormat(_vertexArrayObject, attributeICounter, VertexInfo.NORMALS.StrideSize(), VertexAttribType.Float, false, offsetHelper.StrideOffset());
                 GL.VertexArrayAttribBinding(_vertexArrayObject, attributeICounter, 0);
-                offsetHelper |= MeshInfo.NORMALS;
+                offsetHelper |= VertexInfo.NORMALS;
                 attributeICounter++;
             }
 
@@ -165,12 +166,12 @@ namespace Kalasrapier
         // TODO: change Object class to an interface
         private List<Object> _objects;
 
-        private Level _level;
+        private SceneLoader _sceneLoader;
 
         public World()
         {
             _objects = new List<Object>();
-            _level = new Level();
+            _sceneLoader = new SceneLoader();
         }
 
         // Para el tema de los materiales aquí quizás haya que tocar el Index. Y alguna info addicional de 
@@ -179,12 +180,12 @@ namespace Kalasrapier
         {
             float[] vertexArray;
             uint[] indexArray;
-            for (int i = 0; i < _level.AmountOfMeshes(); i++)
+            for (int i = 0; i < _sceneLoader.AmountOfMeshes(); i++)
             {
-                _level.GetVertexArray(i, out vertexArray);
-                _level.GetIndexArray(i, out indexArray);
+                _sceneLoader.GetVertexArray(i, out vertexArray);
+                _sceneLoader.GetIndexArray(i, out indexArray);
                 var obj = new Object();
-                obj.LoadMeshDSA(ref vertexArray, ref indexArray, _level.GetInfo(i));
+                obj.LoadMeshDSA(ref vertexArray, ref indexArray, _sceneLoader.GetInfo(i));
                 obj.IndexLength = indexArray.Length;
                 _objects.Add(obj);
             }
