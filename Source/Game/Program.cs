@@ -3,6 +3,8 @@ using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 
+using Kalasrapier.Engine;
+
 namespace Kalasrapier
 {
     public static class Program
@@ -14,7 +16,7 @@ namespace Kalasrapier
                API = ContextAPI.OpenGL,
                APIVersion = new Version(4, 6),
                 Size = new Vector2i(800, 600),
-                Title = "Kalasrapier",
+                Title = "Kala's Rapier",
                 // This is needed to run on macos
                 Flags = ContextFlags.ForwardCompatible,
             };

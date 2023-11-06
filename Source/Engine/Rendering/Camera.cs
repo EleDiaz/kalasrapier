@@ -1,7 +1,6 @@
 using OpenTK.Mathematics;
-using System;
 
-namespace Kalasrapier
+namespace Kalasrapier.Engine.Rendering
 {
     // This is the camera class as it could be set up after the tutorials on the website.
     // It is important to note there are a few ways you could have set up this camera.
@@ -27,6 +26,13 @@ namespace Kalasrapier
 
         // The field of view of the camera (radians)
         private float _fov = MathHelper.PiOver2;
+
+        // By default the camera will be centered to the origin. And will try to 
+        // the Aspect ratio, if not will be 1
+        public Camera(float ratio) {
+            Position = new Vector3(0,0,0);
+            AspectRatio = ratio;
+        }
 
         public Camera(Vector3 position, float aspectRatio)
         {

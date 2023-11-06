@@ -1,33 +1,33 @@
 namespace Kalasrapier.Engine.ImportJson
 {
-    public class Orientation
+    public class OrientationJson
     {
         public float[] axis { get; set; }
         public float angle { get; set; }
 
-        public Orientation()
+        public OrientationJson()
         {
             this.axis = new float[] { 0.0f, 1.0f, 0.0f };
             this.angle = 0f;
         }
 
-        public Orientation(float[] axis, float angle)
+        public OrientationJson(float[] axis, float angle)
         {
             this.axis = axis;
             this.angle = angle;
         }
     }
 
-    public class Actor
+    public class ActorJson
     {
         public string id { get; set; }
         public string sm { get; set; }
         public bool enabled { get; set; }
         public float[] position { get; set; }
         public float[] scale { get; set; }
-        public Orientation orientation { get; set; }
+        public OrientationJson orientation { get; set; }
 
-        public Actor(float[] scale, string id, string sm, float[] position, Orientation orientation)
+        public ActorJson(float[] scale, string id, string sm, float[] position, OrientationJson orientation)
         {
             this.scale = scale;
             this.id = id;
@@ -37,25 +37,25 @@ namespace Kalasrapier.Engine.ImportJson
         }
     }
 
-    public class MeshMeta
+    public class MeshMetaJson
     {
         public string file { get; set; }
         public string id { get; set; }
 
-        public MeshMeta(string file, string id)
+        public MeshMetaJson(string file, string id)
         {
             this.file = file;
             this.id = id;
         }
     }
 
-    public class Scene
+    public class SceneJson
     {
-        public MeshMeta[] meshes { get; set; }
-        public Actor[] actors { get; set; }
-        public PlayerStart playerStart { get; set; }
+        public MeshMetaJson[] meshes { get; set; }
+        public ActorJson[] actors { get; set; }
+        public PlayerStartJson playerStart { get; set; }
 
-        public Scene(MeshMeta[] meshes, Actor[] actors, PlayerStart playerStart)
+        public SceneJson(MeshMetaJson[] meshes, ActorJson[] actors, PlayerStartJson playerStart)
         {
             this.meshes = meshes;
             this.actors = actors;
@@ -63,18 +63,18 @@ namespace Kalasrapier.Engine.ImportJson
         }
     }
 
-    public class PlayerStart
+    public class PlayerStartJson
     {
         public float[] position { get; set; }
-        public Orientation orientation { get; set; }
+        public OrientationJson orientation { get; set; }
 
-        public PlayerStart()
+        public PlayerStartJson()
         {
             this.position = new float[] { 1.0f, 1.0f, 1.0f };
-            this.orientation = new Orientation();
+            this.orientation = new OrientationJson();
         }
 
-        public PlayerStart(Orientation orientation, float[] position)
+        public PlayerStartJson(OrientationJson orientation, float[] position)
         {
             this.orientation = orientation;
             this.position = position;

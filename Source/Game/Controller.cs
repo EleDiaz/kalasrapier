@@ -1,8 +1,10 @@
+using Kalasrapier.Engine;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using Window = Kalasrapier.Engine.Window;
 
-namespace Kalasrapier
+namespace Kalasrapier.Game
 {
     public interface IController
     {
@@ -18,7 +20,7 @@ namespace Kalasrapier
         private Vector3 _movementInput = new Vector3();
         private Vector2 _armAngles = new Vector2();
 
-        private Angles2D _armAnglesTarge = new Angles2D();
+        // private Angles2D _armAnglesTarge = new Angles2D();
 
         private float _deltaTime;
         private bool _active = false;
