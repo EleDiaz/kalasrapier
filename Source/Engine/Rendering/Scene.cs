@@ -40,18 +40,19 @@ namespace Kalasrapier.Engine.Rendering
             }
             var sceneData = File.ReadAllText(sceneFilePath);
 
-            var scene = JsonSerializer.Deserialize<SceneJson>(sceneData, _jsonOptions);
-            if (scene is null)
+            sceneJson = JsonSerializer.Deserialize<SceneJson>(sceneData, _jsonOptions);
+            if (sceneJson is null)
             {
                 throw new Exception("Scene is null");
             }
 
-            _playerStart = scene.playerStart;
+            _playerStart = sceneJson.playerStart;
 
-            foreach (var mesh in scene.meshes)
+            foreach (var mesh in sceneJson.meshes)
             {
                 LoadMesh(mesh.file, mesh.id);
             }
+
         }
 
         public void LoadMesh(string file, string id)
@@ -73,12 +74,8 @@ namespace Kalasrapier.Engine.Rendering
         {
             if (sceneJson is null)
             {
-                return
+                return;
             }
-
-            float[] vertexArray;
-            uint[] indexArray;
-            int[] slots;
 
             foreach (var actor in sceneJson.actors)
             {
@@ -88,9 +85,7 @@ namespace Kalasrapier.Engine.Rendering
                     if (!Meshes.MeshesInfo.ContainsKey(actor.sm))
                     {
                         var meshFormat = meshesJson[actor.sm];
-                        meshFormat.GetVertexArray(out vertexArray);
-                        meshFormat.GetIndexArray(out indexArray, out slots);
-                        Meshes.LoadMeshDSA(actor.sm, ref vertexArray, ref indexArray, meshFormat.GetInfo());
+                        Meshes.LoadMeshFormat(actor.sm, meshFormat);
                     }
                     Actors.Add(actor.id, new Actor(actor));
                 }

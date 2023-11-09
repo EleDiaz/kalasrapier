@@ -10,9 +10,6 @@ namespace Kalasrapier.Game
     public class Pawn : Actor
     {
         private Camera _camera;
-        private Vector3 _movementInput = new Vector3();
-        private Vector2 _armAngles = new Vector2();
-        private bool _active = false;
         private Controller _controller;
 
         public float Speed { get; set; }

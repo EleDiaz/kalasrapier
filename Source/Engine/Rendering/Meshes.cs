@@ -24,6 +24,8 @@ namespace Kalasrapier.Engine.Rendering
         // Information relate to material slots
         public int[]? Slots;
 
+        public Material[]? Materials;
+
 
         public void SetActiveMesh()
         {
@@ -31,10 +33,22 @@ namespace Kalasrapier.Engine.Rendering
         }
 
         // TODO: move out
-        public void DrawMesh()
+        public void DrawMesh(Shader shader)
         {
-            // https://docs.gl/gl4/glDrawElements
-            GL.DrawElements(PrimitiveType.Triangles, IndicesLenght, DrawElementsType.UnsignedInt, 0);
+            if (Slots is null) {
+                // https://docs.gl/gl4/glDrawElements
+                GL.DrawElements(PrimitiveType.Triangles, IndicesLenght, DrawElementsType.UnsignedInt, 0);
+            }
+            else {
+                // Make a draw call for each texture color
+                for (int i = 0; i < Slots.Length - 1; i++)
+                {
+                    Materials![i].SetActive(shader);
+                    GL.DrawElements(PrimitiveType.Triangles, Slots[i+1] - Slots[i], DrawElementsType.UnsignedInt, Slots[i]);
+                }
+                Materials![Slots.Length - 1].SetActive(shader);
+                GL.DrawElements(PrimitiveType.Triangles, IndicesLenght - 1 + Slots[Slots.Length - 1], DrawElementsType.UnsignedInt, Slots[Slots.Length - 1]);
+            }
             Utils.CheckGLError("Draw Mesh");
         }
 
@@ -53,14 +67,37 @@ namespace Kalasrapier.Engine.Rendering
 
         public Dictionary<string, MeshInfo> MeshesInfo { get => _meshesInfo; }
 
+
+        public void LoadMeshFormat(string mesh_id, MeshJson meshJson) {
+            float[] vertexArray;
+            uint[] indexArray;
+            int[] slots;
+            meshJson.GetVertexArray(out vertexArray);
+            meshJson.GetIndexArray(out indexArray, out slots);
+            LoadMeshDSA(mesh_id, ref vertexArray, ref indexArray, meshJson.GetInfo());
+            LoadMaterials(mesh_id, meshJson, slots);
+        }
+
+        public void LoadMaterials(string mesh_id, MeshJson meshJson, int[] slots) {
+            var meshInfo = MeshesInfo[mesh_id];
+            meshInfo.Materials = new Material[meshJson.materialSlot!.Length];
+            for (int i = 0; i < meshInfo.Materials.Length; i++)
+            {
+                meshInfo.Materials[i] = new Material(meshJson.materialSlot![i]);
+            }
+            meshInfo.Slots = slots;
+        }
+
         /// <summary>
         /// Load the mesh throught the DSA extension. https://www.khronos.org/opengl/wiki/Direct_State_Access
         /// This Operation will overwrite the mesh with new data.
         /// </summary>
         public void LoadMeshDSA(string mesh_id, ref float[] vertexArray, ref uint[] indexArray, VertexInfo info)
         {
-            var meshInfo = new MeshInfo();
-            MeshesInfo.TryGetValue(mesh_id, out meshInfo);
+            MeshInfo? meshInfo;
+            if (!MeshesInfo.TryGetValue(mesh_id, out meshInfo)) {
+                meshInfo = new MeshInfo();
+            }
 
             GL.CreateBuffers(1, out meshInfo.Vbo);
             Utils.LabelObject(ObjectLabelIdentifier.Buffer, meshInfo.Vbo, "VBO " + mesh_id);
@@ -145,6 +182,8 @@ namespace Kalasrapier.Engine.Rendering
             // Link the IBO to the VAO
             // https://docs.gl/gl4/glVertexArrayElementBuffer
             GL.VertexArrayElementBuffer(meshInfo.Vao, meshInfo.Ibo);
+
+            _meshesInfo.Add(mesh_id, meshInfo);
             Utils.CheckGLError("Load Mesh DSA");
         }
 

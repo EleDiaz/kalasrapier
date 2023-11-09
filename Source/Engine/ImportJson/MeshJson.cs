@@ -65,6 +65,8 @@ namespace Kalasrapier.Engine.ImportJson
         // uints
         public uint[][]? indicesPerMaterial { get; set;}
 
+        public MaterialJson[]? materialSlot { get; set; }
+
 
         public MeshJson() {
             vertices = new float[0];

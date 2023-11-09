@@ -45,9 +45,6 @@ namespace Kalasrapier.Engine
             _shader = new Shader("Shaders/vert.glsl", "Shaders/frag.glsl");
 
             _shader.Use();
-
-            var posLocation = _shader.GetAttribLocation("aPosition");
-
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
@@ -65,19 +62,10 @@ namespace Kalasrapier.Engine
                 _shader!.SetMatrix4("view", Camera.GetViewMatrix());
                 _shader!.SetMatrix4("projection", Camera.GetProjectionMatrix());
                 var mesh = _scene.Meshes.MeshesInfo[actor.mesh_id];
-                // TODO: Draw each slot
                 mesh.SetActiveMesh();
-                mesh.DrawMesh();
-
-                // INFO: para renderizar con varios materiales se utiliza varias llamadas a draw cambiando el parámetro de 
-                // diffuse color (uniform) La llamada pinta solo aquellos indices que tengan asignado el material
-                // jugando con el offset, ojo puntero al primer indece del array de indices pasar por ref
-                // GL.DrawElements(PrimitiveType.Triangles,nelements,DrawElementsType.UnsignedInt, ref indexData[slotData[i]]);
+                mesh.DrawMesh(_shader);
             }
 
-
-
-            // ImGui.SliderFloat("Rotation Speed", ref _rotSpeed, 0.0f, 10.0f);
             // ImGui.SliderAngle("Angle", ref _rotAngle);
             // ImGui.SliderAngle("Camera yaw", ref _camera._yaw);
 
