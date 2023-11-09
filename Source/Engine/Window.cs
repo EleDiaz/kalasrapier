@@ -42,7 +42,8 @@ namespace Kalasrapier.Engine
             // GL.ProvokingVertex(ProvokingVertexMode.FirstVertexConvention);
             _scene = new Scene("Scenes/simple.json");
 
-            _shader = new Shader("Shaders/vert.glsl", "Shaders/frag.glsl");
+            // _shader = new Shader("Shaders/vert.glsl", "Shaders/frag.glsl");
+            _shader = new Shader("Shaders/material_vert.glsl", "Shaders/material_frag.glsl");
 
             _shader.Use();
         }

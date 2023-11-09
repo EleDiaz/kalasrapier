@@ -41,10 +41,11 @@ def extract_mesh_data(obj):
     polygons = obj.data.polygons
     for polygon in polygons:
         verts = polygon.vertices
+        slot = 0
         if len(mesh_data["materials"]) == 1: # No materials at all
             slot = 0
         else:
-            slot = polygon.material_index + 1 # Skip the default material
+            slot = polygon.material_index # Skip the default material
         # TODO: review if it's necessary to keep changing the vertices ccw?
         mesh_data["indexdata"][slot] += [verts[0], verts[2], verts[1]]
 
@@ -66,9 +67,9 @@ def extract_mesh_data(obj):
 
 sobjects = bpy.context.selected_objects
 
-meshes = []
-for obj in sobjects:
-    meshes.append(extract_mesh_data(obj))
+# meshes = []
+# for obj in sobjects:
+#     meshes.append(extract_mesh_data(obj))
 
 dir_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 # new_path=os.path.dirname(os.path.join(dir_path,'..\..'))
@@ -78,6 +79,6 @@ new_path = os.path.join(dir_path, "mesh.json")
 print(new_path)
 
 with open(new_path, "w") as file:
-    json.dump(meshes, file, indent=4)
+    json.dump(extract_mesh_data(sobjects[0]), file, indent=4)
 
 print("Finalizada la escritura de los datos")
