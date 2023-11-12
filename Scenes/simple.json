@@ -1,65 +1,57 @@
 {
-  "meshes": [
-    {
-      "file": "Meshes/monkey.json",
-      "id": "monkey"
-    },
-    {
-      "file": "Meshes/cube.json",
-      "id": "cube"
-    },
-    {
-      "file": "Meshes/pawn.json",
-      "id": "pawn"
+    "meshes": [
+        {
+            "file": "Meshes/cube.json",
+            "id": "monkey"
+        },
+        {
+            "file": "Meshes/cube.json",
+            "id": "cube"
+        },
+        {
+            "file": "Meshes/pawn.json",
+            "id": "pawn"
+        }
+    ],
+    "textures": [],
+    "actors": [
+        {
+            "id": "cube_0",
+            "mesh_id": "cube",
+            "enabled": true,
+            "scale": [
+                1,
+                1,
+                1
+            ],
+            "position": [
+                0,
+                0,
+                0
+            ],
+            "orientation": {
+                "axis": [
+                    1,
+                    1,
+                    1
+                ],
+                "angle": 75
+            }
+        }
+    ],
+    "playerStart": {
+        "position": [
+            0,
+            0,
+            0
+        ],
+        "orientation": {
+            "axis": [
+                1,
+                0,
+                0
+            ],
+            "angle": 0
+        }
     }
-  ],
-  "actors": [
-    {
-      "id": "monkey_0",
-      "sm": "monkey",
-      "enabled": true,
-      "position": [-1,0,1],
-      "orientation": {
-        "axis": [1, 0, 0],
-        "angle": 45
-      }
-    },
-    {
-      "id": "monkey_1",
-      "sm": "monkey",
-      "enabled": true,
-      "position": [1,0,1],
-      "orientation": {
-        "axis": [1, 0, 0],
-        "angle": 90
-      }
-    },
-    {
-      "id": "monkey_2",
-      "sm": "monkey",
-      "enabled": true,
-      "position": [1,0,-1],
-      "orientation": {
-        "axis": [1, 0, 0],
-        "angle":75
-      }
-    },
-    {
-      "id": "cube_0",
-      "sm": "cube",
-      "enabled": true,
-      "position": [0,1,0],
-      "orientation": {
-        "axis": [1, 1, 1],
-        "angle":75
-      }
-    }
-  ],
-  "playerStart": {
-    "position": [0, 0, 0],
-    "orientation": {
-      "axis": [1, 0, 0],
-      "angle": 0
-    }
-  }
 }

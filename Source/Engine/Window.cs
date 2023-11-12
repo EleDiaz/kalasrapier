@@ -5,6 +5,7 @@ using OpenTK.Graphics.OpenGL4;
 using ImGuiNET;
 using OpenTK.Mathematics;
 using Kalasrapier.Engine.Rendering;
+using Kalasrapier.Game;
 
 namespace Kalasrapier.Engine
 {
@@ -44,6 +45,9 @@ namespace Kalasrapier.Engine
 
             // _shader = new Shader("Shaders/vert.glsl", "Shaders/frag.glsl");
             _shader = new Shader("Shaders/material_vert.glsl", "Shaders/material_frag.glsl");
+            var pawn = new Pawn();
+            _scene.Actors["pawn"] = pawn;
+
 
             _shader.Use();
         }
@@ -59,12 +63,18 @@ namespace Kalasrapier.Engine
 
             foreach (var actor in _scene!.Actors.Values)
             {
-                _shader!.SetMatrix4("model", actor.Transform);
-                _shader!.SetMatrix4("view", Camera.GetViewMatrix());
-                _shader!.SetMatrix4("projection", Camera.GetProjectionMatrix());
-                var mesh = _scene.Meshes.MeshesInfo[actor.mesh_id];
-                mesh.SetActiveMesh();
-                mesh.DrawMesh(_shader);
+                if (actor.texture_id is not null) {
+                    _scene.Textures[actor.texture_id].Use(TextureUnit.Texture0);
+                }
+                if (actor.mesh_id is not null)
+                {
+                    _shader!.SetMatrix4("model", actor.Transform);
+                    _shader!.SetMatrix4("view", Camera.GetViewMatrix());
+                    _shader!.SetMatrix4("projection", Camera.GetProjectionMatrix());
+                    var mesh = _scene.Meshes.MeshesInfo[actor.mesh_id];
+                    mesh.SetActiveMesh();
+                    mesh.DrawMesh(_shader);
+                }
             }
 
             // ImGui.SliderAngle("Angle", ref _rotAngle);

@@ -36,30 +36,41 @@ def extract_mesh_data(obj):
         mesh_data["materials"].append(mat)
 
     ### INDECES (and materials associated)
-    mesh_data["indexdata"] = [[]] * (len(mesh_data["materials"]) - 1)
+    mesh_data["indexdata"] = [[] for _ in range(0, len(mesh_data["materials"]) - 1)]
 
     polygons = obj.data.polygons
     for polygon in polygons:
         verts = polygon.vertices
-        slot = 0
-        if len(mesh_data["materials"]) == 1: # No materials at all
+        slot = polygon.material_index
+        if len(mesh_data["materials"]) == 1:  # No materials at all
             slot = 0
         else:
-            slot = polygon.material_index # Skip the default material
-        # TODO: review if it's necessary to keep changing the vertices ccw?
-        mesh_data["indexdata"][slot] += [verts[0], verts[2], verts[1]]
+            slot = polygon.material_index  # Skip the default material
+        mesh_data["indexdata"][slot] += [verts[0], verts[1], verts[2]]
+    
+    
+    # The slots indicates the index range that the material is associate
+    mesh_data["index_slots"] = [{"offset": len(slot), "start": 0} for slot in mesh_data["indexdata"]]
+    acc = 0
+    for slot in mesh_data["index_slots"]:
+        slot["start"] = acc
+        acc += slot["offset"]
+
+    # Flatten the index data
+    mesh_data["indexdata"] = [index for slots in mesh_data["indexdata"] for index in slots]
+
 
     ### UV (TODO: maybe we need to see how this works with several materials)
-    operate_uvs = [0.0, 0.0] * len(vertices)
+    operate_uvs = []
     ob_loops = obj.data.loops
     uv_layer = obj.data.uv_layers.active.data
-    # loop are the polygons that conform the mesh. This imply some duplicated iterations
-    # but was the only way to obtain the vertex_index
-    for loop in ob_loops:
-        vi = loop.vertex_index * 2
-        uv = uv_layer[loop.index].uv
-        operate_uvs[vi] = uv[0]
-        operate_uvs[vi + 1] = uv[1]
+
+    for polygon in polygons:
+        loops = polygon.loop_indices
+        for loopindex in loops:
+            loop = ob_loops[loopindex]
+            uvloop = uv_layer[loopindex]
+            operate_uvs += [uvloop.uv[0], uvloop.uv[1]]
 
     mesh_data["uvs"] = operate_uvs
     return mesh_data

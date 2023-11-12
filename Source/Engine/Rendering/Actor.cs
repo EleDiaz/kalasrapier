@@ -6,22 +6,31 @@ namespace Kalasrapier.Engine.Rendering
 {
     public class Actor
     {
-        public string mesh_id;
+        public string? mesh_id;
+        public string? texture_id;
         public Matrix4 Transform;
         public bool enabled;
         public string id;
 
-        public Actor() {
-            mesh_id = "NO_MESH_ACTOR_ID";
+        public Actor()
+        {
             id = "NO_ACTOR_ID";
             enabled = false;
             Transform = Matrix4.Identity;
             SetupCallbacks();
         }
 
+        public Actor(Actor actor) {
+            mesh_id = actor.mesh_id;
+            texture_id = actor.texture_id;
+            id = actor.id;
+            enabled = actor.enabled;
+        }
+
         public Actor(ActorJson actorJson)
         {
-            mesh_id = actorJson.sm;
+            mesh_id = actorJson.mesh_id;
+            texture_id = actorJson.texture_id;
             id = actorJson.id;
             enabled = actorJson.enabled;
 
@@ -35,11 +44,13 @@ namespace Kalasrapier.Engine.Rendering
 
         // We could setup more callbacks like the render one. But, things could turn wild, without a clear access to
         // the camera draw call order.
-        private void SetupCallbacks() {
+        private void SetupCallbacks()
+        {
             Window.Self!.UpdateFrame += UpdateFrame;
         }
 
-        protected virtual void UpdateFrame(FrameEventArgs e) {
+        protected virtual void UpdateFrame(FrameEventArgs e)
+        {
         }
     }
 }

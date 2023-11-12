@@ -22,9 +22,10 @@ namespace Kalasrapier.Engine.Rendering
         // Vertex distribution info
         public VertexInfo VertexInfo { get; set; }
         // Information relate to material slots
-        public int[]? Slots;
-
+        public IndicesPerMaterial[]? Slots;
+        // Default Materials applied to the mesh.
         public Material[]? Materials;
+        //TODO: Fill those materials
 
 
         public void SetActiveMesh()
@@ -35,19 +36,25 @@ namespace Kalasrapier.Engine.Rendering
         // TODO: move out
         public void DrawMesh(Shader shader)
         {
+            Console.WriteLine("Drawing");
             if (Slots is null) {
-                // https://docs.gl/gl4/glDrawElements
-                GL.DrawElements(PrimitiveType.Triangles, IndicesLenght, DrawElementsType.UnsignedInt, 0);
+                if (VertexInfo.HasFlag(VertexInfo.UV)) {
+                    // With UV our mesh replicate the vertices making the indexArray useless
+                    GL.DrawArrays(PrimitiveType.Triangles, 0, IndicesLenght);
+                }
+                else {
+                    // https://docs.gl/gl4/glDrawElements
+                    GL.DrawElements(PrimitiveType.Triangles, IndicesLenght, DrawElementsType.UnsignedInt, 0);
+                }
             }
             else {
                 // Make a draw call for each texture color
-                for (int i = 0; i < Slots.Length - 1; i++)
+                Console.WriteLine(Slots.Length);
+                for (int i = 0; i < Slots.Length; i++)
                 {
                     Materials![i].SetActive(shader);
-                    GL.DrawElements(PrimitiveType.Triangles, Slots[i+1] - Slots[i], DrawElementsType.UnsignedInt, Slots[i]);
+                    GL.DrawElements(PrimitiveType.Triangles, (int)Slots[i].offset, DrawElementsType.UnsignedInt, (int)(Slots[i].start * sizeof(uint)));
                 }
-                Materials![Slots.Length - 1].SetActive(shader);
-                GL.DrawElements(PrimitiveType.Triangles, IndicesLenght - 1 + Slots[Slots.Length - 1], DrawElementsType.UnsignedInt, Slots[Slots.Length - 1]);
             }
             Utils.CheckGLError("Draw Mesh");
         }
@@ -71,21 +78,28 @@ namespace Kalasrapier.Engine.Rendering
         public void LoadMeshFormat(string mesh_id, MeshJson meshJson) {
             float[] vertexArray;
             uint[] indexArray;
-            int[] slots;
             meshJson.GetVertexArray(out vertexArray);
-            meshJson.GetIndexArray(out indexArray, out slots);
+            for (int i = 0; i < vertexArray.Length; i++)
+            {
+                if (i % meshJson.GetInfo().StrideSize() == 0) {
+                    Console.WriteLine("");
+                }
+                Console.Write(vertexArray[i] + " ");
+            }
+            meshJson.GetIndexArray(out indexArray);
             LoadMeshDSA(mesh_id, ref vertexArray, ref indexArray, meshJson.GetInfo());
-            LoadMaterials(mesh_id, meshJson, slots);
+            LoadMaterials(mesh_id, meshJson);
         }
 
-        public void LoadMaterials(string mesh_id, MeshJson meshJson, int[] slots) {
+        public void LoadMaterials(string mesh_id, MeshJson meshJson) {
             var meshInfo = MeshesInfo[mesh_id];
-            meshInfo.Materials = new Material[meshJson.materialSlot!.Length];
+            meshInfo.Slots = meshJson.index_slots;
+
+            meshInfo.Materials = new Material[meshJson.materials?.Length ?? 0];
             for (int i = 0; i < meshInfo.Materials.Length; i++)
             {
-                meshInfo.Materials[i] = new Material(meshJson.materialSlot![i]);
+                meshInfo.Materials[i] = new Material(meshJson.materials![i]);
             }
-            meshInfo.Slots = slots;
         }
 
         /// <summary>
@@ -167,14 +181,14 @@ namespace Kalasrapier.Engine.Rendering
                 attributeICounter++;
             }
 
-            if (info.HasFlag(VertexInfo.WEIGHTS))
-            {
-                GL.EnableVertexArrayAttrib(meshInfo.Vao, attributeICounter);
-                GL.VertexArrayAttribFormat(meshInfo.Vao, attributeICounter, VertexInfo.WEIGHTS.StrideSize(), VertexAttribType.Float, false, offsetHelper.StrideOffset());
-                GL.VertexArrayAttribBinding(meshInfo.Vao, attributeICounter, 0);
-                offsetHelper |= VertexInfo.WEIGHTS;
-                attributeICounter++;
-            }
+                if (info.HasFlag(VertexInfo.WEIGHTS))
+                {
+                    GL.EnableVertexArrayAttrib(meshInfo.Vao, attributeICounter);
+                    GL.VertexArrayAttribFormat(meshInfo.Vao, attributeICounter, VertexInfo.WEIGHTS.StrideSize(), VertexAttribType.Float, false, offsetHelper.StrideOffset());
+                    GL.VertexArrayAttribBinding(meshInfo.Vao, attributeICounter, 0);
+                    offsetHelper |= VertexInfo.WEIGHTS;
+                    attributeICounter++;
+                }
 
             GL.CreateBuffers(1, out meshInfo.Ibo);
             GL.NamedBufferStorage(meshInfo.Ibo, indexArray.Length * sizeof(uint), indexArray, BufferStorageFlags.DynamicStorageBit);

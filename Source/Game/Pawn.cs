@@ -15,8 +15,16 @@ namespace Kalasrapier.Game
         public float Speed { get; set; }
         public float MouseSensibility { get; set; }
 
+        public Pawn(): base() {
+            // TODO: This should have some kind of system to keep a set of camera, 
+            //       and which of them is active.
+            _camera = Window.Self!.Camera;
+            _controller = new Controller();
+            Speed = 1f;
+            MouseSensibility = 50f;
+        }
 
-        public Pawn(ActorJson actorJson) : base(actorJson)
+        public Pawn(Actor actor) : base(actor)
         {
             // TODO: This should have some kind of system to keep a set of camera, 
             //       and which of them is active.

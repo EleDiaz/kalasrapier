@@ -7,13 +7,15 @@ namespace Kalasrapier.Engine.Rendering
     {
         // Json Stuff
         private SceneJson? sceneJson;
-        private Dictionary<string, MeshJson> meshesJson;
+        private Dictionary<string, MeshJson> meshesJson = new();
 
         // Practical Content
         private Meshes _meshes = new();
         public Meshes Meshes { get => _meshes; }
         private Dictionary<string, Actor> _actors = new();
         public Dictionary<string, Actor> Actors { get => _actors; }
+        private Dictionary<string, Texture> _textures = new();
+        public Dictionary<string, Texture> Textures { get => _textures; }
 
         private PlayerStartJson _playerStart = new(); // TODO:
 
@@ -23,13 +25,12 @@ namespace Kalasrapier.Engine.Rendering
 
         public Scene()
         {
-            meshesJson = new();
         }
 
         public Scene(string sceneFilePath)
         {
-            meshesJson = new();
             LoadScene(sceneFilePath);
+            InitScene();
         }
 
         public void LoadScene(string sceneFilePath)
@@ -53,6 +54,21 @@ namespace Kalasrapier.Engine.Rendering
                 LoadMesh(mesh.file, mesh.id);
             }
 
+            // foreach (var actor in sceneJson.actors)
+            // {
+            //     Actors.Add(actor.id, new Actor(actor));
+            // }
+
+            foreach (var texture in sceneJson.textures)
+            {
+                LoadTexture(texture.id, texture.path);
+            }
+        }
+
+        public void LoadTexture(string id, string file)
+        {
+            var texture = Texture.LoadFromFile(file);
+            Textures.Add(id, texture);
         }
 
         public void LoadMesh(string file, string id)
@@ -82,10 +98,10 @@ namespace Kalasrapier.Engine.Rendering
                 // Load only meshes in into the GPU
                 if (actor.enabled)
                 {
-                    if (!Meshes.MeshesInfo.ContainsKey(actor.sm))
+                    if (!Meshes.MeshesInfo.ContainsKey(actor.mesh_id))
                     {
-                        var meshFormat = meshesJson[actor.sm];
-                        Meshes.LoadMeshFormat(actor.sm, meshFormat);
+                        var meshFormat = meshesJson[actor.mesh_id];
+                        Meshes.LoadMeshFormat(actor.mesh_id, meshFormat);
                     }
                     Actors.Add(actor.id, new Actor(actor));
                 }
