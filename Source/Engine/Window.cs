@@ -64,6 +64,12 @@ namespace Kalasrapier.Engine
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
+            // TODO: options
+            // - Shader class only storing the available shaders 
+            //   - each actor decides which shader will use
+            //     - It would imply an inefficient draw call, with many context switches 
+            //       - solution, grouping those meshes into those shaders.
+            //       - Shader class will have cache storing those groups (more complexity)
             _shader!.Use();
 
             foreach (var actor in _scene!.Actors.Values)
