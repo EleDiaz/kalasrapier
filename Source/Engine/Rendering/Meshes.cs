@@ -36,7 +36,6 @@ namespace Kalasrapier.Engine.Rendering
         // TODO: move out
         public void DrawMesh(Shader shader)
         {
-            Console.WriteLine("Drawing");
             if (Slots is null) {
                 if (VertexInfo.HasFlag(VertexInfo.UV)) {
                     // With UV our mesh replicate the vertices making the indexArray useless
@@ -49,7 +48,6 @@ namespace Kalasrapier.Engine.Rendering
             }
             else {
                 // Make a draw call for each texture color
-                Console.WriteLine(Slots.Length);
                 for (int i = 0; i < Slots.Length; i++)
                 {
                     Materials![i].SetActive(shader);
@@ -79,13 +77,6 @@ namespace Kalasrapier.Engine.Rendering
             float[] vertexArray;
             uint[] indexArray;
             meshJson.GetVertexArray(out vertexArray);
-            for (int i = 0; i < vertexArray.Length; i++)
-            {
-                if (i % meshJson.GetInfo().StrideSize() == 0) {
-                    Console.WriteLine("");
-                }
-                Console.Write(vertexArray[i] + " ");
-            }
             meshJson.GetIndexArray(out indexArray);
             LoadMeshDSA(mesh_id, ref vertexArray, ref indexArray, meshJson.GetInfo());
             LoadMaterials(mesh_id, meshJson);

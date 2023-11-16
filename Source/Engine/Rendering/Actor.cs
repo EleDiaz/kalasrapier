@@ -6,6 +6,7 @@ namespace Kalasrapier.Engine.Rendering
 {
     public class Actor
     {
+        // TODO: Shader Reference.
         public string? mesh_id;
         public string? texture_id;
         public Matrix4 Transform;
@@ -47,9 +48,14 @@ namespace Kalasrapier.Engine.Rendering
         private void SetupCallbacks()
         {
             Window.Self!.UpdateFrame += UpdateFrame;
+            Window.Self!.RenderGUI += RenderGUI;
         }
 
         protected virtual void UpdateFrame(FrameEventArgs e)
+        {
+        }
+
+        protected virtual void RenderGUI()
         {
         }
     }

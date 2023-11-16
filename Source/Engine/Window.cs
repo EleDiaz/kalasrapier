@@ -11,6 +11,10 @@ namespace Kalasrapier.Engine
 {
     public class Window : GameWindow
     {
+        // TODO: Initial Approach
+        public delegate void OnRenderGUI();
+        public event OnRenderGUI RenderGUI;
+
         private ImGuiController? _imGuiController;
         private Scene? _scene;
         private Shader? _shader;
@@ -45,6 +49,7 @@ namespace Kalasrapier.Engine
 
             // _shader = new Shader("Shaders/vert.glsl", "Shaders/frag.glsl");
             _shader = new Shader("Shaders/material_vert.glsl", "Shaders/material_frag.glsl");
+            // TODO: no using scene properties
             var pawn = new Pawn();
             _scene.Actors["pawn"] = pawn;
 
@@ -79,6 +84,9 @@ namespace Kalasrapier.Engine
 
             // ImGui.SliderAngle("Angle", ref _rotAngle);
             // ImGui.SliderAngle("Camera yaw", ref _camera._yaw);
+
+            // Render sub ImGUI elements
+            RenderGUI();
 
             _imGuiController?.Render();
 

@@ -19,7 +19,7 @@ namespace Kalasrapier.Engine.Rendering
         private Vector3 _right = Vector3.UnitX;
 
         // Rotation around the X axis (radians)
-        private float _pitch;
+        public float _pitch;
 
         // Rotation around the Y axis (radians)
         public float _yaw = -MathHelper.PiOver2; // Without this, you would be started rotated 90 degrees right.

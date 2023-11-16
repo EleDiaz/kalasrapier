@@ -1,7 +1,7 @@
 {
     "meshes": [
         {
-            "file": "Meshes/cube.json",
+            "file": "Meshes/monkey.json",
             "id": "monkey"
         },
         {
@@ -16,8 +16,8 @@
     "textures": [],
     "actors": [
         {
-            "id": "cube_0",
-            "mesh_id": "cube",
+            "id": "pawn_0",
+            "mesh_id": "pawn",
             "enabled": true,
             "scale": [
                 1,
@@ -27,21 +27,67 @@
             "position": [
                 0,
                 0,
-                0
+                -5
             ],
             "orientation": {
                 "axis": [
                     1,
-                    1,
-                    1
+                    0,
+                    0
                 ],
-                "angle": 75
+                "angle": 0
+            }
+        },
+        {
+            "id": "cube_1",
+            "mesh_id": "cube",
+            "enabled": true,
+            "scale": [
+                1,
+                1,
+                1
+            ],
+            "position": [
+                5,
+                0,
+                -5
+            ],
+            "orientation": {
+                "axis": [
+                    1,
+                    0,
+                    0
+                ],
+                "angle": 0
+            }
+        },
+        {
+            "id": "monkey_0",
+            "mesh_id": "monkey",
+            "enabled": true,
+            "scale": [
+                1,
+                1,
+                1
+            ],
+            "position": [
+                -5,
+                0,
+                -5
+            ],
+            "orientation": {
+                "axis": [
+                    1,
+                    0,
+                    0
+                ],
+                "angle": 0
             }
         }
     ],
     "playerStart": {
         "position": [
-            0,
+            -10,
             0,
             0
         ],

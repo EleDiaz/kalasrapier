@@ -3,6 +3,7 @@ using OpenTK.Windowing.Common;
 using Kalasrapier.Engine.ImportJson;
 using Kalasrapier.Engine.Rendering;
 using Kalasrapier.Engine;
+using ImGuiNET;
 
 namespace Kalasrapier.Game
 {
@@ -11,6 +12,8 @@ namespace Kalasrapier.Game
     {
         private Camera _camera;
         private Controller _controller;
+
+        private Vector4 column1;
 
         public float Speed { get; set; }
         public float MouseSensibility { get; set; }
@@ -48,6 +51,15 @@ namespace Kalasrapier.Game
             // TODO: This generates a problem due to the rotation lock.
             _camera.Yaw += angles.X;
             _camera.Pitch += angles.Y;
+        }
+
+        // TODO: Maybe we should switch the lib https://github.com/aybe/DearImGui
+        protected override void RenderGUI()
+        {
+            // ImGui.SliderAngle("Angle", ref _rotAngle);
+            ImGui.SliderAngle("Camera yaw", ref _camera._yaw);
+            ImGui.SliderAngle("Camera pitch", ref _camera._pitch);
+            // ImGui.InputFloat4("", ref column1);
         }
     }
 }
