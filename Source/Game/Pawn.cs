@@ -1,9 +1,5 @@
 using OpenTK.Mathematics;
-using OpenTK.Windowing.Common;
-using Kalasrapier.Engine.ImportJson;
 using Kalasrapier.Engine.Rendering;
-using Kalasrapier.Engine;
-using ImGuiNET;
 
 namespace Kalasrapier.Game
 {
@@ -12,54 +8,34 @@ namespace Kalasrapier.Game
     {
         private Camera _camera;
         private Controller _controller;
-
-        private Vector4 column1;
+        private float cameraDistance = 2f;
 
         public float Speed { get; set; }
         public float MouseSensibility { get; set; }
 
-        public Pawn(): base() {
-            // TODO: This should have some kind of system to keep a set of camera, 
-            //       and which of them is active.
-            _camera = Window.Self!.Camera;
+
+        public override void Start()
+        {
+            _camera = World.Camera;
             _controller = new Controller();
             Speed = 1f;
             MouseSensibility = 50f;
+            Enabled = true;
+            MeshId = "pawn";
+            Id = "pawn";
         }
 
-        public Pawn(Actor actor) : base(actor)
+        public override void Update(double deltaTime)
         {
-            // TODO: This should have some kind of system to keep a set of camera, 
-            //       and which of them is active.
-            _camera = Window.Self!.Camera;
-            _controller = new Controller();
-            Speed = 1f;
-            MouseSensibility = 50f;
-        }
+            _controller.UpdateState(World.Window);
 
-
-        protected override void UpdateFrame(FrameEventArgs e)
-        {
-            _controller.UpdateState(Window.Self!, e);
-
-            Vector3 movement = _controller.GetMovement();
+            Vector3 movement = _controller.GetMovement() * Speed * (float)deltaTime;
             Vector2 angles = _controller.GetArmDirection();
+            
+            var rotation = Matrix4.CreateRotationX(angles.X) * Matrix4.CreateRotationY(angles.Y);
+            Transform *= rotation * Matrix4.CreateTranslation(movement * Speed * (float)deltaTime);
 
-            // TODO: We are negating the Z axis changing the Opengl forward, there is something weird. See Utils.cs
-            // This change could be happening in the projection view?
-            _camera.Position += _camera.Front * -movement.Z + _camera.Right * movement.X + _camera.Up * movement.Y;
-            // TODO: This generates a problem due to the rotation lock.
-            _camera.Yaw += angles.X;
-            _camera.Pitch += angles.Y;
-        }
-
-        // TODO: Maybe we should switch the lib https://github.com/aybe/DearImGui
-        protected override void RenderGUI()
-        {
-            // ImGui.SliderAngle("Angle", ref _rotAngle);
-            ImGui.SliderAngle("Camera yaw", ref _camera._yaw);
-            ImGui.SliderAngle("Camera pitch", ref _camera._pitch);
-            // ImGui.InputFloat4("", ref column1);
+            _camera.Transform = Matrix4.CreateTranslation(1f, 0, 0) * rotation;
         }
     }
 }

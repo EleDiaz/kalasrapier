@@ -1,28 +1,24 @@
 using Kalasrapier.Engine;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
+using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using Window = Kalasrapier.Engine.Window;
 
 namespace Kalasrapier.Game
 {
     public interface IController
     {
         // Recieve information to the controller
-        void UpdateState(Window window, FrameEventArgs eventArgs);
+        void UpdateState(GameWindow window);
         Vector3 GetMovement();
         Vector2 GetArmDirection();
     }
 
     public class Controller : IController
     {
-        private FrameEventArgs _frameEvents;
         private Vector3 _movementInput = new Vector3();
         private Vector2 _armAngles = new Vector2();
 
-        // private Angles2D _armAnglesTarge = new Angles2D();
-
-        private float _deltaTime;
         private bool _active = false;
 
         public float Speed { get; set; }
@@ -36,21 +32,19 @@ namespace Kalasrapier.Game
 
         public Vector2 GetArmDirection()
         {
-            return _armAngles * MouseSensibility * _deltaTime;
+            return _armAngles * MouseSensibility;
         }
 
         public Vector3 GetMovement()
         {
-            return _movementInput * Speed * _deltaTime;
+            return _movementInput * Speed;
         }
 
-        public void UpdateState(Window window, FrameEventArgs eventArgs)
+        public void UpdateState(GameWindow window)
         {
             //window.ClientSize
             var keyboardState = window.KeyboardState;
             var mouseState = window.MouseState;
-            _frameEvents = eventArgs;
-            _deltaTime = (float)eventArgs.Time;
             _movementInput = Vector3.Zero;
             _armAngles = Vector2.Zero;
 

@@ -65,7 +65,7 @@ namespace Kalasrapier.Engine.ImportJson
         // 3 floats
         public float[] vertexdata { get; set; }
         // 2 floats
-        public float[]? uv { get; set; }
+        public float[]? uvs { get; set; }
         // Colors are assume to be 4 floats
         public float[]? colordata { get; set; }
         // 3 floats
@@ -90,7 +90,7 @@ namespace Kalasrapier.Engine.ImportJson
             var flags = VertexInfo.VERTICES;
             if (colordata is not null)
                 flags |= VertexInfo.COLORS;
-            if (uv is not null)
+            if (uvs is not null)
                 flags |= VertexInfo.UV;
             if (normaldata is not null)
                 flags |= VertexInfo.NORMALS;
@@ -121,7 +121,7 @@ namespace Kalasrapier.Engine.ImportJson
             // each polygon primitive.
 
             var getSize = (VertexInfo info) => {
-                return uv?.Length / 2 * info.ComponentSize();
+                return uvs?.Length / 2 * info.ComponentSize();
             };
 
             var verticesLength = getSize(VertexInfo.VERTICES) ?? vertexdata.Length;
@@ -133,7 +133,7 @@ namespace Kalasrapier.Engine.ImportJson
             // Weights are associate to a vertex 1-1.
             var weightsLength = getSize(VertexInfo.COLORS) ?? weightdata?.Length ?? 0;
 
-            var uvLength = uv?.Length ?? 0;
+            var uvLength = uvs?.Length ?? 0;
 
             var size = verticesLength + normalLength + colorsLength + weightsLength + uvLength;
 
@@ -194,7 +194,7 @@ namespace Kalasrapier.Engine.ImportJson
                 }
                 else if (i % strideSize < uvOffset)
                 {
-                    vertexData[i] = uv![uvI];
+                    vertexData[i] = uvs![uvI];
                     uvI++;
                 }
                 else if (i % strideSize < normalOffset)

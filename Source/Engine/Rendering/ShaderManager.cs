@@ -1,24 +1,26 @@
-
 namespace Kalasrapier.Engine.Rendering {
+    public enum ShaderInfo
+    {
+        VERTICES = 1,
+        COLORS = 2,
+        UV = 4,
+        NORMALS = 8,
+        WEIGHTS = 16,
+        TEXTURE = 32,
+    }
+    
+    
 
-    // 
+    
     public class ShaderManager {
-        private Dictionary<ShaderID, MeshID> _groups;
-
-        private void GroupingMeshes() {
-            // Get an iterator of active meshes,
-            // groups them
-
+        private Dictionary<MeshInfo, Shader> _shaders;
+        
+        public ShaderManager() {
+            _shaders = new Dictionary<MeshInfo, Shader>();
         }
-
-        private void DrawByShader(ShaderID) {
-            // here we just call the mesh draw
-            // and if it was possible the Meshes should be able to operate a multidraw call given the
-            // meshes id 
-
-
-            // also remember that each actor needs to update the shader in some minor way, something that could dissappear with the multidraw
-
+        
+        public void LoadShader(MeshInfo meshInfo, Shader shader) {
+            _shaders.Add(meshInfo, shader);           
         }
     }
 }

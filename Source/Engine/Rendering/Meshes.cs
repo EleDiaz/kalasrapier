@@ -3,7 +3,6 @@ using OpenTK.Graphics.OpenGL;
 
 namespace Kalasrapier.Engine.Rendering
 {
-
     public class MeshInfo
     {
         // https://www.khronos.org/opengl/wiki/Buffer_Object
@@ -11,18 +10,24 @@ namespace Kalasrapier.Engine.Rendering
         // VBO Handler. VBO is a simple Buffer object, an array of raw data with no aditional
         // information associate to it.
         public int Vbo;
+
         // Array/struct of metadata, as format references to which VBO is connected
         // https://www.khronos.org/opengl/wiki/Vertex_Specification#Vertex_Array_Object
         // VAO handler.
         public int Vao;
+
         // IBO
         public int Ibo;
+
         // Total amount of indices
-        public int IndicesLenght;
+        public int IndicesLenght = 0;
+
         // Vertex distribution info
         public VertexInfo VertexInfo { get; set; }
+
         // Information relate to material slots
         public IndicesPerMaterial[]? Slots;
+
         // Default Materials applied to the mesh.
         public Material[]? Materials;
         //TODO: Fill those materials
@@ -36,24 +41,30 @@ namespace Kalasrapier.Engine.Rendering
         // TODO: move out
         public void DrawMesh(Shader shader)
         {
-            if (Slots is null) {
-                if (VertexInfo.HasFlag(VertexInfo.UV)) {
+            if (Slots is null)
+            {
+                if (VertexInfo.HasFlag(VertexInfo.UV))
+                {
                     // With UV our mesh replicate the vertices making the indexArray useless
                     GL.DrawArrays(PrimitiveType.Triangles, 0, IndicesLenght);
                 }
-                else {
+                else
+                {
                     // https://docs.gl/gl4/glDrawElements
                     GL.DrawElements(PrimitiveType.Triangles, IndicesLenght, DrawElementsType.UnsignedInt, 0);
                 }
             }
-            else {
+            else
+            {
                 // Make a draw call for each texture color
                 for (int i = 0; i < Slots.Length; i++)
                 {
                     Materials![i].SetActive(shader);
-                    GL.DrawElements(PrimitiveType.Triangles, (int)Slots[i].offset, DrawElementsType.UnsignedInt, (int)(Slots[i].start * sizeof(uint)));
+                    GL.DrawElements(PrimitiveType.Triangles, (int)Slots[i].offset, DrawElementsType.UnsignedInt,
+                        (int)(Slots[i].start * sizeof(uint)));
                 }
             }
+
             Utils.CheckGLError("Draw Mesh");
         }
 
@@ -70,10 +81,14 @@ namespace Kalasrapier.Engine.Rendering
     {
         private Dictionary<string, MeshInfo> _meshesInfo = new();
 
-        public Dictionary<string, MeshInfo> MeshesInfo { get => _meshesInfo; }
+        public Dictionary<string, MeshInfo> MeshesInfo
+        {
+            get => _meshesInfo;
+        }
 
 
-        public void LoadMeshFormat(string mesh_id, MeshJson meshJson) {
+        public void LoadMeshFormat(string mesh_id, MeshJson meshJson)
+        {
             float[] vertexArray;
             uint[] indexArray;
             meshJson.GetVertexArray(out vertexArray);
@@ -82,7 +97,8 @@ namespace Kalasrapier.Engine.Rendering
             LoadMaterials(mesh_id, meshJson);
         }
 
-        public void LoadMaterials(string mesh_id, MeshJson meshJson) {
+        public void LoadMaterials(string mesh_id, MeshJson meshJson)
+        {
             var meshInfo = MeshesInfo[mesh_id];
             meshInfo.Slots = meshJson.index_slots;
 
@@ -97,23 +113,25 @@ namespace Kalasrapier.Engine.Rendering
         /// Load the mesh throught the DSA extension. https://www.khronos.org/opengl/wiki/Direct_State_Access
         /// This Operation will overwrite the mesh with new data.
         /// </summary>
-        public void LoadMeshDSA(string mesh_id, ref float[] vertexArray, ref uint[] indexArray, VertexInfo info)
+        public void LoadMeshDSA(string meshId, ref float[] vertexArray, ref uint[] indexArray, VertexInfo info)
         {
             MeshInfo? meshInfo;
-            if (!MeshesInfo.TryGetValue(mesh_id, out meshInfo)) {
+            if (!MeshesInfo.TryGetValue(meshId, out meshInfo))
+            {
                 meshInfo = new MeshInfo();
             }
 
             GL.CreateBuffers(1, out meshInfo.Vbo);
-            Utils.LabelObject(ObjectLabelIdentifier.Buffer, meshInfo.Vbo, "VBO " + mesh_id);
+            Utils.LabelObject(ObjectLabelIdentifier.Buffer, meshInfo.Vbo, "VBO " + meshId);
             // NOTE: glBufferData vs glBufferStorage, the last one specify that the memory size requested wont change on
             // size, in case of changing it again with glBufferStorage, will produce an error.
             // The later also allows to better performance. You can still modify the mapped memory via glSubBufferData*
             // https://docs.gl/gl4/glBufferStorage
             // GL.NamedBufferData(_vertexBufferObject, _meshFormat.vertices.Length * sizeof(float), _meshFormat.vertices, BufferUsageHint.StaticDraw);
 
-            GL.NamedBufferStorage(meshInfo.Vbo, vertexArray.Length * sizeof(float), vertexArray, BufferStorageFlags.DynamicStorageBit);
-            Utils.CheckGLError("Failed To Load VBO " + mesh_id);
+            GL.NamedBufferStorage(meshInfo.Vbo, vertexArray.Length * sizeof(float), vertexArray,
+                BufferStorageFlags.DynamicStorageBit);
+            Utils.CheckGLError("Failed To Load VBO " + meshId);
 
             GL.CreateVertexArrays(1, out meshInfo.Vao);
             // https://docs.gl/gl4/glBindVertexBuffer
@@ -121,9 +139,9 @@ namespace Kalasrapier.Engine.Rendering
             // vao, binding index, buffer bind, offset, stride
             // You can bind several vbo to a vao through bindingIndex and bufferHandler
             // TODO
-            Utils.LabelObject(ObjectLabelIdentifier.Buffer, meshInfo.Vao, "VAO " + mesh_id);
+            Utils.LabelObject(ObjectLabelIdentifier.Buffer, meshInfo.Vao, "VAO " + meshId);
             GL.VertexArrayVertexBuffer(meshInfo.Vao, 0, meshInfo.Vbo, 0, info.StrideOffset());
-            Utils.CheckGLError("Failed to VAO " + mesh_id);
+            Utils.CheckGLError("Failed to VAO " + meshId);
 
             var offsetHelper = VertexInfo.VERTICES;
             var attributeICounter = 0;
@@ -131,13 +149,15 @@ namespace Kalasrapier.Engine.Rendering
             {
                 throw new Exception("No vertices");
             }
+
             // https://docs.gl/gl4/glEnableVertexAttribArray
             // Enabled the location 0 on shaders (binding index)
             GL.EnableVertexArrayAttrib(meshInfo.Vao, attributeICounter);
             // https://docs.gl/gl4/glVertexAttribFormat
             // vao, attrib location, length of compounds, type, normalized integer, relative offset
             // Vertices
-            GL.VertexArrayAttribFormat(meshInfo.Vao, attributeICounter, VertexInfo.VERTICES.StrideSize(), VertexAttribType.Float, false, 0);
+            GL.VertexArrayAttribFormat(meshInfo.Vao, attributeICounter, VertexInfo.VERTICES.StrideSize(),
+                VertexAttribType.Float, false, 0);
 
             // https://docs.gl/gl4/glVertexAttribBinding
             // vao, attrib index, binding index
@@ -148,7 +168,8 @@ namespace Kalasrapier.Engine.Rendering
             if (info.HasFlag(VertexInfo.COLORS))
             {
                 GL.EnableVertexArrayAttrib(meshInfo.Vao, attributeICounter);
-                GL.VertexArrayAttribFormat(meshInfo.Vao, attributeICounter, VertexInfo.COLORS.StrideSize(), VertexAttribType.Float, false, offsetHelper.StrideOffset());
+                GL.VertexArrayAttribFormat(meshInfo.Vao, attributeICounter, VertexInfo.COLORS.StrideSize(),
+                    VertexAttribType.Float, false, offsetHelper.StrideOffset());
                 GL.VertexArrayAttribBinding(meshInfo.Vao, attributeICounter, 0);
                 offsetHelper |= VertexInfo.COLORS;
                 attributeICounter++;
@@ -157,7 +178,8 @@ namespace Kalasrapier.Engine.Rendering
             if (info.HasFlag(VertexInfo.UV))
             {
                 GL.EnableVertexArrayAttrib(meshInfo.Vao, attributeICounter);
-                GL.VertexArrayAttribFormat(meshInfo.Vao, attributeICounter, VertexInfo.UV.StrideSize(), VertexAttribType.Float, false, offsetHelper.StrideOffset());
+                GL.VertexArrayAttribFormat(meshInfo.Vao, attributeICounter, VertexInfo.UV.StrideSize(),
+                    VertexAttribType.Float, false, offsetHelper.StrideOffset());
                 GL.VertexArrayAttribBinding(meshInfo.Vao, attributeICounter, 0);
                 offsetHelper |= VertexInfo.UV;
                 attributeICounter++;
@@ -166,29 +188,32 @@ namespace Kalasrapier.Engine.Rendering
             if (info.HasFlag(VertexInfo.NORMALS))
             {
                 GL.EnableVertexArrayAttrib(meshInfo.Vao, attributeICounter);
-                GL.VertexArrayAttribFormat(meshInfo.Vao, attributeICounter, VertexInfo.NORMALS.StrideSize(), VertexAttribType.Float, false, offsetHelper.StrideOffset());
+                GL.VertexArrayAttribFormat(meshInfo.Vao, attributeICounter, VertexInfo.NORMALS.StrideSize(),
+                    VertexAttribType.Float, false, offsetHelper.StrideOffset());
                 GL.VertexArrayAttribBinding(meshInfo.Vao, attributeICounter, 0);
                 offsetHelper |= VertexInfo.NORMALS;
                 attributeICounter++;
             }
 
-                if (info.HasFlag(VertexInfo.WEIGHTS))
-                {
-                    GL.EnableVertexArrayAttrib(meshInfo.Vao, attributeICounter);
-                    GL.VertexArrayAttribFormat(meshInfo.Vao, attributeICounter, VertexInfo.WEIGHTS.StrideSize(), VertexAttribType.Float, false, offsetHelper.StrideOffset());
-                    GL.VertexArrayAttribBinding(meshInfo.Vao, attributeICounter, 0);
-                    offsetHelper |= VertexInfo.WEIGHTS;
-                    attributeICounter++;
-                }
+            if (info.HasFlag(VertexInfo.WEIGHTS))
+            {
+                GL.EnableVertexArrayAttrib(meshInfo.Vao, attributeICounter);
+                GL.VertexArrayAttribFormat(meshInfo.Vao, attributeICounter, VertexInfo.WEIGHTS.StrideSize(),
+                    VertexAttribType.Float, false, offsetHelper.StrideOffset());
+                GL.VertexArrayAttribBinding(meshInfo.Vao, attributeICounter, 0);
+                // offsetHelper |= VertexInfo.WEIGHTS;
+                // attributeICounter++;
+            }
 
             GL.CreateBuffers(1, out meshInfo.Ibo);
-            GL.NamedBufferStorage(meshInfo.Ibo, indexArray.Length * sizeof(uint), indexArray, BufferStorageFlags.DynamicStorageBit);
-            Utils.LabelObject(ObjectLabelIdentifier.Buffer, meshInfo.Ibo, "IBO " + mesh_id);
+            GL.NamedBufferStorage(meshInfo.Ibo, indexArray.Length * sizeof(uint), indexArray,
+                BufferStorageFlags.DynamicStorageBit);
+            Utils.LabelObject(ObjectLabelIdentifier.Buffer, meshInfo.Ibo, "IBO " + meshId);
             // Link the IBO to the VAO
             // https://docs.gl/gl4/glVertexArrayElementBuffer
             GL.VertexArrayElementBuffer(meshInfo.Vao, meshInfo.Ibo);
 
-            _meshesInfo.Add(mesh_id, meshInfo);
+            _meshesInfo.Add(meshId, meshInfo);
             Utils.CheckGLError("Load Mesh DSA");
         }
 

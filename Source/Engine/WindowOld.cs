@@ -9,7 +9,7 @@ using Kalasrapier.Game;
 
 namespace Kalasrapier.Engine
 {
-    public class Window : GameWindow
+    public class WindowOld : GameWindow
     {
         // TODO: Initial Approach
         public delegate void OnRenderGUI();
@@ -18,19 +18,19 @@ namespace Kalasrapier.Engine
         private ImGuiController? _imGuiController;
         private Scene? _scene;
         private Shader? _shader;
-        public Camera Camera;
+        public CameraOld Camera;
 
         // TODO: We need a singleton, this is a bit hacky way but no that far from a better solution.
         // SAFETY: Window will live longer than any actor, pawn in our framework. unless we start playing with several
         // windows, which is out of scope.
-        public static Window? Self;
+        public static WindowOld Self;
 
-        public Window(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings)
+        public WindowOld(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings)
             : base(gameWindowSettings, nativeWindowSettings)
         {
             Self = this;
             var ratio = Window.Self?.AspectRatio ?? (1, 1);
-            Camera = new Camera(ratio.numerator / (float)ratio.denominator);
+            Camera = new CameraOld(ratio.numerator / (float)ratio.denominator);
         }
 
         // Now, we start initializing OpenGL.
@@ -51,8 +51,7 @@ namespace Kalasrapier.Engine
             _shader = new Shader("Shaders/material_vert.glsl", "Shaders/material_frag.glsl");
             // TODO: no using scene properties
             var pawn = new Pawn();
-            _scene.Actors["pawn"] = pawn;
-
+            _scene.Actors[pawn.Id] = pawn;
 
             _shader.Use();
         }
@@ -74,15 +73,15 @@ namespace Kalasrapier.Engine
 
             foreach (var actor in _scene!.Actors.Values)
             {
-                if (actor.texture_id is not null) {
-                    _scene.Textures[actor.texture_id].Use(TextureUnit.Texture0);
+                if (actor.TextureId is not null) {
+                    _scene.Textures[actor.TextureId].Use(TextureUnit.Texture0);
                 }
-                if (actor.mesh_id is not null)
+                if (actor.MeshId is not null)
                 {
                     _shader!.SetMatrix4("model", actor.Transform);
                     _shader!.SetMatrix4("view", Camera.GetViewMatrix());
                     _shader!.SetMatrix4("projection", Camera.GetProjectionMatrix());
-                    var mesh = _scene.Meshes.MeshesInfo[actor.mesh_id];
+                    var mesh = _scene.Meshes.MeshesInfo[actor.MeshId];
                     mesh.SetActiveMesh();
                     mesh.DrawMesh(_shader);
                 }

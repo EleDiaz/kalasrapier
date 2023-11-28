@@ -10,12 +10,8 @@ namespace Kalasrapier.Engine.Rendering
         private Dictionary<string, MeshJson> meshesJson = new();
 
         // Practical Content
-        private Meshes _meshes = new();
-        public Meshes Meshes { get => _meshes; }
         private Dictionary<string, Actor> _actors = new();
         public Dictionary<string, Actor> Actors { get => _actors; }
-        private Dictionary<string, Texture> _textures = new();
-        public Dictionary<string, Texture> Textures { get => _textures; }
 
         private PlayerStartJson _playerStart = new(); // TODO:
 

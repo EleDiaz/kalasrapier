@@ -20,11 +20,12 @@ namespace Kalasrapier
                 Flags = ContextFlags.ForwardCompatible,
             };
 
-
             using (var window = new Window(GameWindowSettings.Default, nativeWindowSettings))
             {
                 window.Run();
             }
+
+            var game = new GameManager();
         }
     }
 }
