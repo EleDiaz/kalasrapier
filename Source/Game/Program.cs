@@ -26,6 +26,10 @@ namespace Kalasrapier
             }
 
             var game = new GameManager();
+            game.AddScene("");
+            game.ExtendActor();
+            
+            game.Run();
         }
     }
 }

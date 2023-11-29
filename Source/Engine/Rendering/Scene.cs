@@ -94,10 +94,10 @@ namespace Kalasrapier.Engine.Rendering
                 // Load only meshes in into the GPU
                 if (actor.enabled)
                 {
-                    if (!Meshes.MeshesInfo.ContainsKey(actor.mesh_id))
+                    if (!MeshManager.MeshesInfo.ContainsKey(actor.mesh_id))
                     {
                         var meshFormat = meshesJson[actor.mesh_id];
-                        Meshes.LoadMeshFormat(actor.mesh_id, meshFormat);
+                        MeshManager.LoadMeshFormat(actor.mesh_id, meshFormat);
                     }
                     Actors.Add(actor.id, new Actor(actor));
                 }

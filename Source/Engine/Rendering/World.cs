@@ -12,18 +12,18 @@ namespace Kalasrapier.Engine.Rendering
     public class World
     {
         public GameWindow Window { get; private set; }
-        public Camera Camera { get; private set; }
+        public Camera Camera { get; private set; } = new();
 
         private Scene? _scene;
-        public ShaderManager ShaderManager { get; }
-        private Meshes Meshes { get; set; } = new();
-        private Dictionary<string, Texture> Textures { get; set; } = new();
+        public ActorManager ActorManager { get; set; } = new();
+        private MeshManager MeshManager { get; set; } = new();
+        private TextureManager TextureManager { get; set; } = new();
+        
+        private RenderPipeline _renderPipeline;
 
         public World(GameWindow window)
         {
             Window = window;
-            ShaderManager = new ShaderManager();
-            Camera = new Camera();
             _scene = null;
         }
 

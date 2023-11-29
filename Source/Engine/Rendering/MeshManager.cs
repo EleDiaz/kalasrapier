@@ -77,7 +77,7 @@ namespace Kalasrapier.Engine.Rendering
     }
 
 
-    public class Meshes
+    public class MeshManager
     {
         private Dictionary<string, MeshInfo> _meshesInfo = new();
 

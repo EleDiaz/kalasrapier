@@ -25,7 +25,7 @@ namespace Kalasrapier.Engine.ImportJson
         }
 
         // TODO: In our implementation all the subcomponents has a size of 4 bytes (floats and uint) for simplicity i
-        // will keep it like that
+        //       will keep it like that
         public static int StrideOffset(this VertexInfo info)
         {
             return info.StrideSize() * sizeof(float);
@@ -113,7 +113,7 @@ namespace Kalasrapier.Engine.ImportJson
 
             // We can't directly use the vertex length when we work with UVs. Due, that each UV is linked to a vertex
             // inside a triangle primitive and those primitive could have those vertices 0 or more times shared with others.
-            // Also, one would be encoured to think that the UV points would match the index points. But it is false
+            // Also, one would be encouraged to think that the UV points would match the index points. But it is false
             // depending on the representation of those index points. We will be using one where the indexes aren't
             // reuse between triangles. So, our UVs will always be double size of our index buffer.
             //

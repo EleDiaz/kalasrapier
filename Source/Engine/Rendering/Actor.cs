@@ -1,20 +1,23 @@
 using Kalasrapier.Engine.ImportJson;
 using OpenTK.Mathematics;
+using Vector3 = OpenTK.Mathematics.Vector3;
 
 namespace Kalasrapier.Engine.Rendering
 {
     public class Actor
     {
-        public string? ShaderId { get; set; }
         public string? MeshId { get; set; }
         public string? TextureId { get; set; }
         public Matrix4 Transform { get; set; } = Matrix4.Identity;
         public bool Enabled { get; set; } = false;
         public string Id { get; set; } = "NO_ACTOR_ID";
         
+        private Actor? Parent { get; set; }
+        private List<Actor> Children { get; set; }
+        
         // A property to be setup once the object has been instanced by the world
         private World? _world;
-        public World World { get => _world!; private set => _world = value; }
+        public World World { get => _world!; set => _world = value; }
         
         public Actor()
         {
@@ -24,6 +27,7 @@ namespace Kalasrapier.Engine.Rendering
         {
             MeshId = actor.MeshId;
             TextureId = actor.TextureId;
+            Transform = actor.Transform;
             Id = actor.Id;
             Enabled = actor.Enabled;
         }
@@ -41,8 +45,57 @@ namespace Kalasrapier.Engine.Rendering
 
             Transform = Matrix4.CreateScale(scale) * Matrix4.CreateFromAxisAngle(axis, actorJson.orientation.angle) * Matrix4.CreateTranslation(position);
         }
+        
+        public void SetParent(Actor parent)
+        {
+            var actor = parent;
+            while (actor != this && actor is not null)
+            {
+                actor = actor.Parent;
+            }
 
+            if (actor is null)
+            {
+                this.Parent?.UnLinkChild(this);
+                parent.SetChild(this);
+                Parent = parent;
+            }
+            else
+            {
+                throw new Exception("Cannot set parent because it would create a loop");
+            }
+        }
+        
+        private void SetChild(Actor actor)
+        {
+            if (Children.Any(child => child == actor))
+            {
+                throw new Exception("Cannot set child because it already exists");
+            }
+            else
+            {
+                Children.Add(actor);
+            }
 
+        }
+        
+        public void UnLinkChild(Actor actor)
+        {
+            Children.Remove(actor);
+            actor.Parent = null;
+        }
+
+        public void InstantiateAsChild(Actor actor)
+        {
+            actor.SetParent(this);
+            World.ActorManager.AddActor(actor);
+        }
+
+        public void Instantiate(Actor actor)
+        {
+            World.ActorManager.AddActor(actor);
+        }
+        
         public virtual void Start()
         {
         }
