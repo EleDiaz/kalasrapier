@@ -18,18 +18,28 @@ namespace Kalasrapier.Engine.Rendering
         // A property to be setup once the object has been instanced by the world
         private World? _world;
         public World World { get => _world!; set => _world = value; }
-        
+        public ulong RenderPipeline { get; set; }
+
         public Actor()
         {
         }
 
         public Actor(Actor actor)
         {
+            TemplateActor(actor);
+        }
+
+        public void TemplateActor(Actor actor)
+        {
             MeshId = actor.MeshId;
             TextureId = actor.TextureId;
             Transform = actor.Transform;
-            Id = actor.Id;
             Enabled = actor.Enabled;
+            Id = actor.Id;
+            Parent = actor.Parent;
+            Children = actor.Children;
+            World = actor.World;
+            RenderPipeline = actor.RenderPipeline;
         }
 
         public Actor(ActorJson actorJson)
@@ -56,7 +66,7 @@ namespace Kalasrapier.Engine.Rendering
 
             if (actor is null)
             {
-                this.Parent?.UnLinkChild(this);
+                Parent?.UnLinkChild(this);
                 parent.SetChild(this);
                 Parent = parent;
             }
@@ -106,6 +116,19 @@ namespace Kalasrapier.Engine.Rendering
 
         protected virtual void RenderImGui()
         {
+        }
+
+        // TODO: review order of matrix multiplication
+        public Matrix4 GetWorldTransform()
+        {
+            if (Parent is null)
+            {
+                return Transform;
+            }
+            else
+            {
+                return Parent.GetWorldTransform() * Transform;
+            }
         }
     }
 }

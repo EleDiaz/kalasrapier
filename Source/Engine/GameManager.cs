@@ -52,29 +52,12 @@ namespace Kalasrapier.Engine
             _window.MouseWheel += WindowOnMouseWheel;
         }
 
-        public void AddScene(string path)
-        {
-            // TODO:
-        }
-
-        public void ExtendActor(string actor_id)
-        {
-        }
-
         private void WindowOnUnload()
         {
             // Unbind all the resources by binding the targets to 0/null.
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
             GL.BindVertexArray(0);
             GL.UseProgram(0);
-
-            // _scene?.Unload();
-
-            // Delete all the resources.
-            //if (_shader is not null)
-            //{
-                //GL.DeleteProgram(_shader.Handle);
-            //}
         }
 
         private void WindowOnMouseWheel(MouseWheelEventArgs e)
@@ -103,6 +86,7 @@ namespace Kalasrapier.Engine
             {
                 _window.Close();
             }
+            World.Update(obj.Time);
         }
 
         private void WindowOnLoad()
@@ -112,6 +96,7 @@ namespace Kalasrapier.Engine
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             GL.Enable(EnableCap.CullFace);
             GL.Enable(EnableCap.DepthTest);
+            World.Start();
         }
         
 
@@ -120,7 +105,7 @@ namespace Kalasrapier.Engine
             _imGuiController?.Update(_window, (float)e.Time);
             
             // Render
-            _world.Render();
+            World.Render();
             
             _imGuiController?.Render();
             Utils.CheckGLError("End of frame");

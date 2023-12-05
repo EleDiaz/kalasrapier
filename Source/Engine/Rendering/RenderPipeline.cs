@@ -1,29 +1,29 @@
-using OpenTK.Mathematics;
+using Kalasrapier.Engine.ImportJson;
 
 namespace Kalasrapier.Engine.Rendering
 {
     public class RenderPipeline
     {
-        private Shader _shader;
-        public MeshInfo MeshInfo { get; set; } = new();
-        public Dictionary<string, Type> Uniforms { get; set; } = new();
-        
+        // For our initial approach we only have 64 possible pipelines actives
+        public ulong Id { get; set; } = 0;
+        // tag to indentify the RenderPipeline in json format
+        public virtual string TAG {get { return "NO_PIPELINE"; }}
+
+        protected Shader _shader;
+        // By default we don't even request any vertex info data
+        public virtual VertexInfo VertexInfo => 0;
+
         public RenderPipeline(Shader shader)
         {
             _shader = shader;
         }
 
-        public void AddInput(MeshInfo meshInfo)
+        // Given the list of actors subscribed to the pipeline, generated the assets for later usage.
+        public virtual void Setup(IEnumerable<Actor> actors, MeshManager meshManager, TextureManager textureManager)
         {
-            MeshInfo = meshInfo;
         }
 
-        public void AddUniform<T>(string name)
-        {
-            Uniforms.Add(name, typeof(T));
-        }
-
-        public virtual void Render(IEnumerable<Actor> actors)
+        public virtual void Render(IEnumerable<Actor> actors, Camera camera, MeshManager meshManager, TextureManager textureManager)
         {
         }
     }

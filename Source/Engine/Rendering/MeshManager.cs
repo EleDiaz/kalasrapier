@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Kalasrapier.Engine.ImportJson;
 using OpenTK.Graphics.OpenGL;
 
@@ -30,14 +31,15 @@ namespace Kalasrapier.Engine.Rendering
 
         // Default Materials applied to the mesh.
         public Material[]? Materials;
+        
         //TODO: Fill those materials
-
 
         public void SetActiveMesh()
         {
             GL.BindVertexArray(Vao);
         }
 
+        /*
         // TODO: move out
         public void DrawMesh(Shader shader)
         {
@@ -67,6 +69,7 @@ namespace Kalasrapier.Engine.Rendering
 
             Utils.CheckGLError("Draw Mesh");
         }
+        */
 
         public void Unload()
         {
@@ -81,20 +84,37 @@ namespace Kalasrapier.Engine.Rendering
     {
         private Dictionary<string, MeshInfo> _meshesInfo = new();
 
-        public Dictionary<string, MeshInfo> MeshesInfo
+        private Dictionary<string, MeshJson> _meshesJson = new();
+
+        public Dictionary<string, MeshInfo> MeshesInfo => _meshesInfo;
+
+        /// <summary>
+        /// Add json mesh to the manager, so it can be loaded later to the gpu.
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="id"></param>
+        /// <exception cref="Exception"></exception>
+        public void AddMeshResource(string file, string id)
         {
-            get => _meshesInfo;
+            var meshData = File.ReadAllText(file);
+
+            var mesh = JsonSerializer.Deserialize<MeshJson>(meshData);
+            if (mesh is null)
+            {
+                throw new Exception(String.Format("Mesh is null file: {0}, id: {1}", file, id));
+            }
+
+            _meshesJson.Add(id, mesh);
         }
 
-
-        public void LoadMeshFormat(string mesh_id, MeshJson meshJson)
+        public void LoadMesh(string mesh_id, VertexInfo info)
         {
+            var meshJson = _meshesJson[mesh_id];
             float[] vertexArray;
             uint[] indexArray;
             meshJson.GetVertexArray(out vertexArray);
             meshJson.GetIndexArray(out indexArray);
-            LoadMeshDSA(mesh_id, ref vertexArray, ref indexArray, meshJson.GetInfo());
-            LoadMaterials(mesh_id, meshJson);
+            LoadMeshDSA(mesh_id, ref vertexArray, ref indexArray, info);
         }
 
         public void LoadMaterials(string mesh_id, MeshJson meshJson)
@@ -110,7 +130,7 @@ namespace Kalasrapier.Engine.Rendering
         }
 
         /// <summary>
-        /// Load the mesh throught the DSA extension. https://www.khronos.org/opengl/wiki/Direct_State_Access
+        /// Load the mesh through the DSA extension. https://www.khronos.org/opengl/wiki/Direct_State_Access
         /// This Operation will overwrite the mesh with new data.
         /// </summary>
         public void LoadMeshDSA(string meshId, ref float[] vertexArray, ref uint[] indexArray, VertexInfo info)

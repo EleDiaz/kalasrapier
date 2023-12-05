@@ -2,6 +2,8 @@ namespace Kalasrapier.Engine.ImportJson
 {
     public class SceneJson
     {
+        // Scene ID
+        public string id;
         public MeshMetaJson[] meshes { get; set; }
         public TextureJson[] textures { get; set; }
         public ActorJson[] actors { get; set; }

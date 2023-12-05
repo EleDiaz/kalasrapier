@@ -3,6 +3,7 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 
 using Kalasrapier.Engine;
+using Kalasrapier.Game;
 
 namespace Kalasrapier
 {
@@ -10,24 +11,10 @@ namespace Kalasrapier
     {
         private static void Main()
         {
-            var nativeWindowSettings = new NativeWindowSettings()
-            {
-               API = ContextAPI.OpenGL,
-               APIVersion = new Version(4, 6),
-                Size = new Vector2i(800, 600),
-                Title = "Kala's Rapier",
-                // This is needed to run on macos
-                Flags = ContextFlags.ForwardCompatible,
-            };
-
-            using (var window = new Window(GameWindowSettings.Default, nativeWindowSettings))
-            {
-                window.Run();
-            }
-
             var game = new GameManager();
-            game.AddScene("");
-            game.ExtendActor();
+            game.World.LoadScene("Scenes/simple.json");
+            game.World.AddRenderPipeline(new DefaultPipeline());
+            game.World.ActorManager.ExtendActorBehavior<Pawn>("pawn_0");
             
             game.Run();
         }

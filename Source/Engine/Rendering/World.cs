@@ -3,43 +3,46 @@ using OpenTK.Windowing.Desktop;
 
 namespace Kalasrapier.Engine.Rendering
 {
-    public enum SpecialActors
-    {
-        Camera,
-        PlayerStart,
-    }
 
     public class World
     {
         public GameWindow Window { get; private set; }
         public Camera Camera { get; private set; } = new();
-
-        private Scene? _scene;
         public ActorManager ActorManager { get; set; } = new();
-        private MeshManager MeshManager { get; set; } = new();
-        private TextureManager TextureManager { get; set; } = new();
-        
-        private RenderPipeline _renderPipeline;
+        public MeshManager MeshManager { get; set; } = new();
+        public TextureManager TextureManager { get; set; } = new();
+
+        private List<RenderPipeline> _renderPipelines = new();
 
         public World(GameWindow window)
         {
             Window = window;
-            _scene = null;
         }
 
         public void LoadScene(string path)
         {
-            _scene = new Scene(path);
+            SceneLoader.LoadScene(path, this);
+            // Upgrade the Camera
+            Camera = ActorManager.ExtendActorBehavior<Camera>(Camera.TAG);
+        }
+        
+        public ulong AddRenderPipeline(RenderPipeline renderPipeline)
+        {
+            _renderPipelines.Add(renderPipeline);
+            return 0;
+        }
 
-            foreach (var actor in _scene!.Actors.Values.Where(actor => actor.Enabled))
+        public void Start()
+        {
+            foreach (var actor in ActorManager.GetActors().Where(actor => actor.Enabled))
             {
                 actor.Start();
             }
         }
 
-        public void Update(float deltaTime)
+        public void Update(double deltaTime)
         {
-            foreach (var actor in _scene!.Actors.Values.Where(actor => actor.Enabled))
+            foreach (var actor in ActorManager.GetActors().Where(actor => actor.Enabled))
             {
                 actor.Update(deltaTime);
             }
@@ -47,22 +50,15 @@ namespace Kalasrapier.Engine.Rendering
 
         public void Render()
         {
-            foreach (var actor in _scene!.Actors.Values.Where(actor => actor.Enabled))
+            foreach (var renderPipeline in _renderPipelines)
             {
-                if (actor.TextureId is not null)
-                {
-                    _scene.Textures[actor.TextureId].Use(TextureUnit.Texture0);
-                }
-
-                if (actor.MeshId is not null)
-                {
-                    _shader!.SetMatrix4("model", actor.Transform);
-                    _shader!.SetMatrix4("view", Camera.GetViewMatrix());
-                    _shader!.SetMatrix4("projection", Camera.GetProjectionMatrix());
-                    var mesh = _scene.Meshes.MeshesInfo[actor.MeshId];
-                    mesh.SetActiveMesh();
-                    mesh.DrawMesh(_shader);
-                }
+                renderPipeline
+                    .Render(
+                        ActorManager.GetActors()
+                            .Where(actor =>
+                                actor.Enabled && (renderPipeline.Id & actor.RenderPipeline) == renderPipeline.Id),
+                        Camera,
+                        MeshManager, TextureManager);
             }
         }
     }
