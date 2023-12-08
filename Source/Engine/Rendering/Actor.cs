@@ -1,5 +1,6 @@
 using Kalasrapier.Engine.ImportJson;
 using OpenTK.Mathematics;
+using static Kalasrapier.Engine.Rendering.Services.Locator;
 using Vector3 = OpenTK.Mathematics.Vector3;
 
 namespace Kalasrapier.Engine.Rendering
@@ -11,14 +12,21 @@ namespace Kalasrapier.Engine.Rendering
         public Matrix4 Transform { get; set; } = Matrix4.Identity;
         public bool Enabled { get; set; } = false;
         public string Id { get; set; } = "NO_ACTOR_ID";
-        
+        public CollisionType CollisionType { get; set; } = CollisionType.None;
         private Actor? Parent { get; set; }
         private List<Actor> Children { get; set; }
         
+
         // A property to be setup once the object has been instanced by the world
         private World? _world;
-        public World World { get => _world!; set => _world = value; }
-        public ulong RenderPipeline { get; set; }
+
+        public World World
+        {
+            get => _world!;
+            private set => _world = value;
+        }
+
+        public string RenderPipeline { get; set; }
 
         public Actor()
         {
@@ -44,18 +52,20 @@ namespace Kalasrapier.Engine.Rendering
 
         public Actor(ActorJson actorJson)
         {
-            MeshId = actorJson.mesh_id;
-            TextureId = actorJson.texture_id;
-            Id = actorJson.id;
-            Enabled = actorJson.enabled;
+            MeshId = actorJson.MeshId;
+            TextureId = actorJson.TextureId;
+            Id = actorJson.Id;
+            Enabled = actorJson.Enabled;
 
-            var scale = new Vector3(actorJson.scale[0], actorJson.scale[1], actorJson.scale[2]);
-            var axis = new Vector3(actorJson.orientation.axis[0], actorJson.orientation.axis[1], actorJson.orientation.axis[2]);
-            var position = new Vector3(actorJson.position[0], actorJson.position[1], actorJson.position[2]);
+            var scale = new Vector3(actorJson.Scale[0], actorJson.Scale[1], actorJson.Scale[2]);
+            var axis = new Vector3(actorJson.Orientation.Axis[0], actorJson.Orientation.Axis[1],
+                actorJson.Orientation.Axis[2]);
+            var position = new Vector3(actorJson.Position[0], actorJson.Position[1], actorJson.Position[2]);
 
-            Transform = Matrix4.CreateScale(scale) * Matrix4.CreateFromAxisAngle(axis, actorJson.orientation.angle) * Matrix4.CreateTranslation(position);
+            Transform = Matrix4.CreateScale(scale) * Matrix4.CreateFromAxisAngle(axis, actorJson.Orientation.Angle) *
+                        Matrix4.CreateTranslation(position);
         }
-        
+
         public void SetParent(Actor parent)
         {
             var actor = parent;
@@ -75,7 +85,7 @@ namespace Kalasrapier.Engine.Rendering
                 throw new Exception("Cannot set parent because it would create a loop");
             }
         }
-        
+
         private void SetChild(Actor actor)
         {
             if (Children.Any(child => child == actor))
@@ -86,9 +96,8 @@ namespace Kalasrapier.Engine.Rendering
             {
                 Children.Add(actor);
             }
-
         }
-        
+
         public void UnLinkChild(Actor actor)
         {
             Children.Remove(actor);
@@ -98,14 +107,14 @@ namespace Kalasrapier.Engine.Rendering
         public void InstantiateAsChild(Actor actor)
         {
             actor.SetParent(this);
-            World.ActorManager.AddActor(actor);
+            ActorManager.AddActor(actor);
         }
 
         public void Instantiate(Actor actor)
         {
-            World.ActorManager.AddActor(actor);
+            ActorManager.AddActor(actor);
         }
-        
+
         public virtual void Start()
         {
         }
@@ -130,5 +139,26 @@ namespace Kalasrapier.Engine.Rendering
                 return Parent.GetWorldTransform() * Transform;
             }
         }
+        
+        public void GenerateCollisionData(CollisionType collisionType,Mesh mesh ){
+            CollisionData=new List<Vector3>();
+            List<Vector3> vertices= Utils.GenerateVector3List(mesh.vertexData);
+            Vector3 ?Min=null;
+            Vector3 ?Max=null;
+
+            Collision.CollisionMinMax(vertices,out Min, out Max);
+            if(Min is not null && Max is not null){
+                CollisionData.Add(Min.Value);
+                CollisionData.Add(Max.Value);
+            }
+        }
+
+        public List<Vector3>? GetCollisionBox(){
+            if(CollisionData.Count<2)
+                return null;
+            List<Vector3> result=CollisionData.GetRange(0,2); // Design decision, return only the required vertices for a Box.
+            return result;
+        }
+
     }
 }

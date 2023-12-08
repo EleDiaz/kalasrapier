@@ -1,5 +1,6 @@
-namespace Kalasrapier.Engine.Rendering
+namespace Kalasrapier.Engine.Rendering.Services
 {
+    /// 
     public class ActorManager
     {
         private Dictionary<string, Actor> Actors { get; set; } = new();
@@ -39,6 +40,16 @@ namespace Kalasrapier.Engine.Rendering
         public Actor GetActor(string tag)
         {
             return Actors[tag];
+        }
+
+        public void SetMainCamera(Camera camera)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Camera GetMainCamera()
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -2,13 +2,70 @@ using System.Text.Json;
 using Kalasrapier.Engine.ImportJson;
 using OpenTK.Graphics.OpenGL;
 
-namespace Kalasrapier.Engine.Rendering
+namespace Kalasrapier.Engine.Rendering.Services
 {
+    /// <summary>
+    /// This enum defines the accepted format for each component
+    /// </summary>
+    [Flags]
+    public enum VertexInfo
+    {
+        VERTICES = 1,
+        COLORS = 2,
+        UV = 4,
+        NORMALS = 8,
+        WEIGHTS = 16,
+    }
+
+    public static class VertexInfoMethods
+    {
+        public static int StrideSize(this VertexInfo info)
+        {
+            return ComponentSize(VertexInfo.VERTICES)
+                + (info.HasFlag(VertexInfo.COLORS) ? ComponentSize(VertexInfo.COLORS) : 0)
+                + (info.HasFlag(VertexInfo.UV) ? ComponentSize(VertexInfo.UV) : 0)
+                + (info.HasFlag(VertexInfo.NORMALS) ? ComponentSize(VertexInfo.NORMALS) : 0)
+                + (info.HasFlag(VertexInfo.WEIGHTS) ? ComponentSize(VertexInfo.WEIGHTS) : 0);
+        }
+
+        // TODO: In our implementation all the subcomponents has a size of 4 bytes (floats and uint) for simplicity i
+        //       will keep it like that
+        public static int StrideOffset(this VertexInfo info)
+        {
+            return info.StrideSize() * sizeof(float);
+        }
+
+        /// <summary>
+        /// Size on bytes of each component.
+        /// </summary>
+        public static int ComponentSize(this VertexInfo info)
+        {
+            switch (info)
+            {
+                case VertexInfo.VERTICES:
+                    return 3;
+                case VertexInfo.COLORS:
+                    return 4;
+                case VertexInfo.NORMALS:
+                    return 3;
+                case VertexInfo.UV:
+                    return 2;
+                case VertexInfo.WEIGHTS:
+                    return 1;
+                default:
+                    return 0;
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Mesh info contains all handlers associate to the GPU data.
+    /// </summary>
     public class MeshInfo
     {
         // https://www.khronos.org/opengl/wiki/Buffer_Object
         // https://www.khronos.org/opengl/wiki/Vertex_Specification#Vertex_Buffer_Object
-        // VBO Handler. VBO is a simple Buffer object, an array of raw data with no aditional
+        // VBO Handler. VBO is a simple Buffer object, an array of raw data with no additional
         // information associate to it.
         public int Vbo;
 
@@ -27,49 +84,15 @@ namespace Kalasrapier.Engine.Rendering
         public VertexInfo VertexInfo { get; set; }
 
         // Information relate to material slots
-        public IndicesPerMaterial[]? Slots;
+        public IndicesPerMaterialJson[]? Slots;
 
         // Default Materials applied to the mesh.
         public Material[]? Materials;
         
-        //TODO: Fill those materials
-
         public void SetActiveMesh()
         {
             GL.BindVertexArray(Vao);
         }
-
-        /*
-        // TODO: move out
-        public void DrawMesh(Shader shader)
-        {
-            if (Slots is null)
-            {
-                if (VertexInfo.HasFlag(VertexInfo.UV))
-                {
-                    // With UV our mesh replicate the vertices making the indexArray useless
-                    GL.DrawArrays(PrimitiveType.Triangles, 0, IndicesLenght);
-                }
-                else
-                {
-                    // https://docs.gl/gl4/glDrawElements
-                    GL.DrawElements(PrimitiveType.Triangles, IndicesLenght, DrawElementsType.UnsignedInt, 0);
-                }
-            }
-            else
-            {
-                // Make a draw call for each texture color
-                for (int i = 0; i < Slots.Length; i++)
-                {
-                    Materials![i].SetActive(shader);
-                    GL.DrawElements(PrimitiveType.Triangles, (int)Slots[i].offset, DrawElementsType.UnsignedInt,
-                        (int)(Slots[i].start * sizeof(uint)));
-                }
-            }
-
-            Utils.CheckGLError("Draw Mesh");
-        }
-        */
 
         public void Unload()
         {
@@ -82,11 +105,9 @@ namespace Kalasrapier.Engine.Rendering
 
     public class MeshManager
     {
-        private Dictionary<string, MeshInfo> _meshesInfo = new();
-
         private Dictionary<string, MeshJson> _meshesJson = new();
 
-        public Dictionary<string, MeshInfo> MeshesInfo => _meshesInfo;
+        public Dictionary<string, MeshInfo> MeshesInfo { get; } = new();
 
         /// <summary>
         /// Add json mesh to the manager, so it can be loaded later to the gpu.
@@ -112,20 +133,20 @@ namespace Kalasrapier.Engine.Rendering
             var meshJson = _meshesJson[mesh_id];
             float[] vertexArray;
             uint[] indexArray;
-            meshJson.GetVertexArray(out vertexArray);
-            meshJson.GetIndexArray(out indexArray);
+            GetVertexArray(meshJson, out vertexArray, info);
+            GetIndexArray(meshJson, out indexArray);
             LoadMeshDSA(mesh_id, ref vertexArray, ref indexArray, info);
         }
 
         public void LoadMaterials(string mesh_id, MeshJson meshJson)
         {
             var meshInfo = MeshesInfo[mesh_id];
-            meshInfo.Slots = meshJson.index_slots;
+            meshInfo.Slots = meshJson.IndexSlots;
 
-            meshInfo.Materials = new Material[meshJson.materials?.Length ?? 0];
+            meshInfo.Materials = new Material[meshJson.Materials?.Length ?? 0];
             for (int i = 0; i < meshInfo.Materials.Length; i++)
             {
-                meshInfo.Materials[i] = new Material(meshJson.materials![i]);
+                meshInfo.Materials[i] = new Material(meshJson.Materials![i]);
             }
         }
 
@@ -184,7 +205,7 @@ namespace Kalasrapier.Engine.Rendering
             // This allows to connect the attribute index to the binding index, which could be the same VBO or another
             // appart defined in GL.VertexArrayVertexBuffer
             GL.VertexArrayAttribBinding(meshInfo.Vao, attributeICounter, 0);
-
+            
             if (info.HasFlag(VertexInfo.COLORS))
             {
                 GL.EnableVertexArrayAttrib(meshInfo.Vao, attributeICounter);
@@ -233,7 +254,7 @@ namespace Kalasrapier.Engine.Rendering
             // https://docs.gl/gl4/glVertexArrayElementBuffer
             GL.VertexArrayElementBuffer(meshInfo.Vao, meshInfo.Ibo);
 
-            _meshesInfo.Add(meshId, meshInfo);
+            MeshesInfo.Add(meshId, meshInfo);
             Utils.CheckGLError("Load Mesh DSA");
         }
 
@@ -264,5 +285,132 @@ namespace Kalasrapier.Engine.Rendering
         //
         //     Utils.CheckGLError("Load Mesh");
         // }
+        
+        public VertexInfo GetInfo(MeshJson meshJson)
+        {
+            var flags = VertexInfo.VERTICES;
+            if (meshJson.ColorData is not null)
+                flags |= VertexInfo.COLORS;
+            if (meshJson.UvData is not null)
+                flags |= VertexInfo.UV;
+            if (meshJson.NormalData is not null)
+                flags |= VertexInfo.NORMALS;
+            if (meshJson.WeightData is not null)
+                flags |= VertexInfo.WEIGHTS;
+
+            return flags;
+        }
+
+        // TODO: validate size of each component
+        public bool Validate(MeshJson meshJson)
+        {
+            
+            return true;
+        }
+
+        public void GetVertexArray(MeshJson meshJson, out float[] vertexData, VertexInfo info)
+        {
+            // We can't directly use the vertex length when we work with UVs. Due, that each UV is linked to a vertex
+            // inside a triangle primitive and those primitive could have those vertices 0 or more times shared with others.
+            // Also, one would be encouraged to think that the UV points would match the index points. But it is false
+            // depending on the representation of those index points. We will be using one where the indexes aren't
+            // reuse between triangles. So, our UVs will always be double size of our index buffer.
+            //
+            // The code is implemented to allow the case where the vertices, normals, colors... are associate to the
+            // each polygon primitive.
+
+            var getSize = (VertexInfo info) => {
+                return meshJson.UvData?.Length / 2 * info.ComponentSize();
+            };
+
+            var verticesLength = getSize(VertexInfo.VERTICES) ?? meshJson.VertexData.Length;
+            // Normals are associate to a vertex 1-1. This could change be to achieve a Flat Shading where each triangle
+            // would share the face normal.
+            var normalLength = getSize(VertexInfo.NORMALS) ?? meshJson.NormalData?.Length ?? 0;
+            // Colors are associate to a vertex 1-1.
+            var colorsLength = getSize(VertexInfo.COLORS) ?? meshJson.ColorData?.Length ?? 0;
+            // Weights are associate to a vertex 1-1.
+            var weightsLength = getSize(VertexInfo.COLORS) ?? meshJson.WeightData?.Length ?? 0;
+
+            var uvLength = meshJson.UvData?.Length ?? 0;
+
+            var size = verticesLength + normalLength + colorsLength + weightsLength + uvLength;
+
+            var strideSize = info.StrideSize();
+            
+            var getOffset = (int currentOffset, VertexInfo component) => {
+                return currentOffset + (info.HasFlag(component) ? component.ComponentSize() : 0);
+            };
+
+            vertexData = new float[size];
+            int vI = 0;
+            var vertexOffset = getOffset(0, VertexInfo.VERTICES);
+            int cI = 0;
+            var colorOffset = getOffset(vertexOffset, VertexInfo.COLORS);
+            int uvI = 0;
+            var uvOffset = getOffset(colorOffset, VertexInfo.UV);
+            int nI = 0;
+            var normalOffset = getOffset(uvOffset, VertexInfo.NORMALS);
+            int wI = 0;
+            var weightsOffset = getOffset(normalOffset, VertexInfo.WEIGHTS);
+
+
+            var fillValuesWithIndices = (ref float[] vertexData, ref int ix, ref int index, float[] array, VertexInfo component) => {
+                // When UV is active the index will be associate to Index the indices.
+                if (info.HasFlag(VertexInfo.UV))
+                {
+                    for (int j = 0; j < component.ComponentSize(); j++)
+                    {
+                        vertexData[ix++] = array[3 * meshJson.IndexData![index] + j];
+                    }
+                    ix--;
+                }
+                else
+                {
+                    vertexData[ix] = array[index];
+                }
+                index++;
+            };
+
+            for (int i = 0; i < vertexData.Length; i++)
+            {
+                if (i % strideSize < vertexOffset)
+                {
+                    fillValuesWithIndices(ref vertexData, ref i, ref vI, meshJson.VertexData, VertexInfo.VERTICES);
+                }
+                else if (i % strideSize < colorOffset)
+                {
+                    fillValuesWithIndices(ref vertexData, ref i, ref cI, meshJson.ColorData!, VertexInfo.COLORS);
+                }
+                else if (i % strideSize < uvOffset)
+                {
+                    vertexData[i] = meshJson.UvData![uvI];
+                    uvI++;
+                }
+                else if (i % strideSize < normalOffset)
+                {
+                    fillValuesWithIndices(ref vertexData, ref i, ref nI, meshJson.NormalData!, VertexInfo.NORMALS);
+                }
+                else if (i % strideSize < weightsOffset)
+                {
+                    fillValuesWithIndices(ref vertexData, ref i, ref wI, meshJson.WeightData!, VertexInfo.WEIGHTS);
+                }
+            }
+        }
+
+        // Drawing by index comes with performance penalty. Unless our target machine is memory limited
+        // or we need the use of several index buffers to render different parts of our mesh. The index buffer will
+        // only produce a penalty due the simple fact is require a prefetch of those vertices. Where the simple method
+        // DrawArrays benefits from data location.
+        public void GetIndexArray(MeshJson meshJson, out uint[] indexArray)
+        {
+            if (meshJson.IndexData is null)
+            {
+                throw new Exception("Mesh didn't come with indices");
+            }
+
+            indexArray = new uint[meshJson.IndexData!.Length];
+            meshJson.IndexData!.CopyTo(indexArray, 0);
+        }
     }
 }

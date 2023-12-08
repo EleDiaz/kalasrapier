@@ -11,8 +11,8 @@ namespace Kalasrapier.Engine.Rendering
         public float[] diffuseColor;
 
         public Material(MaterialJson materialJson) {
-            diffuseColor = materialJson.diffuse_color;
-            name = materialJson.name;
+            diffuseColor = materialJson.DiffuseColor;
+            name = materialJson.Name;
         }
 
         public void SetActive(Shader shader)

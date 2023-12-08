@@ -3,6 +3,7 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 
 using Kalasrapier.Engine;
+using Kalasrapier.Engine.Rendering.Services;
 using Kalasrapier.Game;
 
 namespace Kalasrapier
@@ -14,7 +15,7 @@ namespace Kalasrapier
             var game = new GameManager();
             game.World.LoadScene("Scenes/simple.json");
             game.World.AddRenderPipeline(new DefaultPipeline());
-            game.World.ActorManager.ExtendActorBehavior<Pawn>("pawn_0");
+            Locator.ActorManager.ExtendActorBehavior<Pawn>("pawn_0");
             
             game.Run();
         }

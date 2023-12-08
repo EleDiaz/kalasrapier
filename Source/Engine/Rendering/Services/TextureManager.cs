@@ -1,4 +1,4 @@
-namespace Kalasrapier.Engine.Rendering
+namespace Kalasrapier.Engine.Rendering.Services
 {
     /// <summary>
     /// A Helper class to manage textures

@@ -1,31 +1,31 @@
+using Kalasrapier.Engine.ImportJson;
+using Kalasrapier.Engine.Rendering.Services;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Windowing.Desktop;
 
 namespace Kalasrapier.Engine.Rendering
 {
-
     public class World
     {
         public GameWindow Window { get; private set; }
-        public Camera Camera { get; private set; } = new();
-        public ActorManager ActorManager { get; set; } = new();
-        public MeshManager MeshManager { get; set; } = new();
-        public TextureManager TextureManager { get; set; } = new();
 
         private List<RenderPipeline> _renderPipelines = new();
 
         public World(GameWindow window)
         {
             Window = window;
+            // Initialize the services.
+            Locator.Defaults();
         }
 
         public void LoadScene(string path)
         {
-            SceneLoader.LoadScene(path, this);
+            SceneLoader.LoadScene(path);
             // Upgrade the Camera
-            Camera = ActorManager.ExtendActorBehavior<Camera>(Camera.TAG);
+            var camera = Locator.ActorManager.ExtendActorBehavior<Camera>(Camera.TAG);
+            Locator.ActorManager.SetMainCamera(camera);
         }
-        
+
         public ulong AddRenderPipeline(RenderPipeline renderPipeline)
         {
             _renderPipelines.Add(renderPipeline);
@@ -34,7 +34,7 @@ namespace Kalasrapier.Engine.Rendering
 
         public void Start()
         {
-            foreach (var actor in ActorManager.GetActors().Where(actor => actor.Enabled))
+            foreach (var actor in Locator.ActorManager.GetActors().Where(actor => actor.Enabled))
             {
                 actor.Start();
             }
@@ -42,7 +42,7 @@ namespace Kalasrapier.Engine.Rendering
 
         public void Update(double deltaTime)
         {
-            foreach (var actor in ActorManager.GetActors().Where(actor => actor.Enabled))
+            foreach (var actor in Locator.ActorManager.GetActors().Where(actor => actor.Enabled))
             {
                 actor.Update(deltaTime);
             }
@@ -52,13 +52,13 @@ namespace Kalasrapier.Engine.Rendering
         {
             foreach (var renderPipeline in _renderPipelines)
             {
+                // Future implementations could use some frustum clipping to filter even more the actors
+                //
                 renderPipeline
                     .Render(
-                        ActorManager.GetActors()
+                        Locator.ActorManager.GetActors()
                             .Where(actor =>
-                                actor.Enabled && (renderPipeline.Id & actor.RenderPipeline) == renderPipeline.Id),
-                        Camera,
-                        MeshManager, TextureManager);
+                                actor.Enabled && renderPipeline.Tag == actor.RenderPipeline));
             }
         }
     }

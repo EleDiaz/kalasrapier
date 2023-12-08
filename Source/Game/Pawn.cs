@@ -1,5 +1,6 @@
 using OpenTK.Mathematics;
 using Kalasrapier.Engine.Rendering;
+using Kalasrapier.Engine.Rendering.Services;
 
 namespace Kalasrapier.Game
 {
@@ -16,7 +17,7 @@ namespace Kalasrapier.Game
 
         public override void Start()
         {
-            _camera = World.Camera;
+            _camera = Locator.ActorManager.GetMainCamera();
             _controller = new Controller();
             Speed = 1f;
             MouseSensibility = 50f;
