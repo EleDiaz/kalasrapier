@@ -1,4 +1,4 @@
-using Kalasrapier.Engine.ImportJson;
+using Kalasrapier.Engine;
 using Kalasrapier.Engine.Rendering;
 using Kalasrapier.Engine.Rendering.Services;
 using OpenTK.Graphics.OpenGL4;
@@ -10,8 +10,8 @@ namespace Kalasrapier.Game
         public override string Tag => "DEFAULT_PIPELINE";
         public override VertexInfo VertexInfo => VertexInfo.UV | VertexInfo.NORMALS | VertexInfo.VERTICES;
 
-        const string VertexShader = "Assets/Shaders/Default.vert";
-        const string FragmentShader = "Assets/Shaders/Default.frag";
+        const string VertexShader = "Shaders/material_vert.glsl";
+        const string FragmentShader = "Shaders/material_frag.glsl";
 
         public DefaultPipeline() :
             base(new Shader(VertexShader, FragmentShader))
@@ -36,15 +36,15 @@ namespace Kalasrapier.Game
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             var camera = Locator.ActorManager.GetMainCamera();
 
-            _shader.Use();
-            _shader.SetMatrix4("view", camera.GetViewMatrix());
-            _shader.SetMatrix4("projection", camera.GetProjectionMatrix());
+            Shader.Use();
+            Shader.SetMatrix4("view", camera.GetViewMatrix());
+            Shader.SetMatrix4("projection", camera.GetProjectionMatrix());
 
             foreach (var actor in actors)
             {
                 var mesh = Locator.MeshManager.MeshesInfo[actor.MeshId!];
                 mesh.SetActiveMesh();
-                _shader.SetMatrix4("model", actor.GetWorldTransform());
+                Shader.SetMatrix4("model", actor.GetWorldTransform());
                 var texture = Locator.TextureManager.GetTexture(actor.TextureId!);
                 texture.Use(TextureUnit.Texture0);
                 // Use the drawing primitives
@@ -67,13 +67,13 @@ namespace Kalasrapier.Game
                     // Make a draw call for each texture color
                     for (int i = 0; i < mesh.Slots.Length; i++)
                     {
-                        mesh.Materials![i].SetActive(_shader);
+                        mesh.Materials![i].SetActive(Shader);
                         GL.DrawElements(PrimitiveType.Triangles, (int)mesh.Slots[i].Offset,
                             DrawElementsType.UnsignedInt,
                             (int)(mesh.Slots[i].Start * sizeof(uint)));
                     }
                 }
-                Utils.CheckGLError("Draw Mesh: " + actor.MeshId);
+                Utils.CheckGlError("Draw Mesh: " + actor.MeshId);
             }
         }
     }

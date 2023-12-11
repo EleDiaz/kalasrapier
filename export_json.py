@@ -16,11 +16,11 @@ def extract_mesh_data(obj):
         normal = vert.normal
         operated_normals += [normal[0], normal[2], -normal[1]]
 
-    mesh_data["vertexdata"] = operated_vertices
-    mesh_data["normaldata"] = operated_normals
+    mesh_data["vertex_data"] = operated_vertices
+    mesh_data["normal_data"] = operated_normals
 
-    mesh_data["colordata"] = [1.0, 0.0, 0.0, 1.0] * len(vertices)
-    mesh_data["weightdata"] = [1.0] * len(vertices)
+    mesh_data["color_data"] = [1.0, 0.0, 0.0, 1.0] * len(vertices)
+    mesh_data["weight_data"] = [1.0] * len(vertices)
 
     ### MATERIALS
     default_material = {"name": "default", "diffuse_color": [1.0, 1.0, 1.0, 1.0]}
@@ -36,7 +36,7 @@ def extract_mesh_data(obj):
         mesh_data["materials"].append(mat)
 
     ### INDECES (and materials associated)
-    mesh_data["indexdata"] = [[] for _ in range(0, len(mesh_data["materials"]) - 1)]
+    mesh_data["index_data"] = [[] for _ in range(0, len(mesh_data["materials"]) - 1)]
 
     polygons = obj.data.polygons
     for polygon in polygons:
@@ -46,18 +46,18 @@ def extract_mesh_data(obj):
             slot = 0
         else:
             slot = polygon.material_index  # Skip the default material
-        mesh_data["indexdata"][slot] += [verts[0], verts[1], verts[2]]
+        mesh_data["index_data"][slot] += [verts[0], verts[1], verts[2]]
     
     
     # The slots indicates the index range that the material is associate
-    mesh_data["index_slots"] = [{"offset": len(slot), "start": 0} for slot in mesh_data["indexdata"]]
+    mesh_data["index_slots"] = [{"offset": len(slot), "start": 0} for slot in mesh_data["index_data"]]
     acc = 0
     for slot in mesh_data["index_slots"]:
         slot["start"] = acc
         acc += slot["offset"]
 
     # Flatten the index data
-    mesh_data["indexdata"] = [index for slots in mesh_data["indexdata"] for index in slots]
+    mesh_data["index_data"] = [index for slots in mesh_data["index_data"] for index in slots]
 
 
     ### UV (TODO: maybe we need to see how this works with several materials)

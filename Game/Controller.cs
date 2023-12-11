@@ -8,7 +8,7 @@ namespace Kalasrapier.Game
 {
     public interface IController
     {
-        // Recieve information to the controller
+        // Receive information to the controller
         void UpdateState(GameWindow window);
         Vector3 GetMovement();
         Vector2 GetArmDirection();
@@ -66,17 +66,17 @@ namespace Kalasrapier.Game
                 return;
 
             if (keyboardState.IsKeyDown(Keys.W))
-                _movementInput = Utils.FORWARD;
+                _movementInput = Utils.Forward;
             if (keyboardState.IsKeyDown(Keys.S))
-                _movementInput = -Utils.FORWARD;
+                _movementInput = -Utils.Forward;
             if (keyboardState.IsKeyDown(Keys.A))
-                _movementInput = -Utils.RIGHT;
+                _movementInput = -Utils.Right;
             if (keyboardState.IsKeyDown(Keys.D))
-                _movementInput = Utils.RIGHT;
+                _movementInput = Utils.Right;
             if (keyboardState.IsKeyDown(Keys.E))
-                _movementInput = Utils.UP;
+                _movementInput = Utils.Up;
             if (keyboardState.IsKeyDown(Keys.Q))
-                _movementInput = -Utils.UP;
+                _movementInput = -Utils.Up;
 
             // This can be modified to keep some relation to the windows size.
             // For example: a 8k windows will its mouse have bigger delta?

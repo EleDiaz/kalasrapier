@@ -1,4 +1,5 @@
 {
+    "id": "SimpleScene",
     "meshes": [
         {
             "file": "Meshes/monkey.json",
@@ -16,9 +17,44 @@
     "textures": [],
     "actors": [
         {
+            "id": "DIRECTIONAL_LIGHT",
+            "enabled": true,
+            "position": [
+                0,
+                5,
+                0
+            ],
+            "orientation": {
+                "axis": [
+                    1,
+                    0,
+                    0
+                ],
+                "angle": -45
+            }
+        },
+        {
+            "id": "CAMERA",
+            "enabled": true,
+            "position": [
+                0,
+                0,
+                -5
+            ],
+            "orientation": {
+                "axis": [
+                    1,
+                    0,
+                    0
+                ],
+                "angle": 0
+            }
+        },
+        {
             "id": "pawn_0",
             "mesh_id": "pawn",
             "enabled": true,
+            "render_pipeline" : "DEFAULT_PIPELINE",
             "scale": [
                 1,
                 1,
@@ -36,12 +72,14 @@
                     0
                 ],
                 "angle": 0
-            }
+            },
+            "children": []
         },
         {
             "id": "cube_1",
             "mesh_id": "cube",
             "enabled": true,
+            "render_pipeline" : "DEFAULT_PIPELINE",
             "scale": [
                 1,
                 1,
@@ -65,6 +103,7 @@
             "id": "monkey_0",
             "mesh_id": "monkey",
             "enabled": true,
+            "render_pipeline" : "DEFAULT_PIPELINE",
             "scale": [
                 1,
                 1,
@@ -84,20 +123,5 @@
                 "angle": 0
             }
         }
-    ],
-    "playerStart": {
-        "position": [
-            -10,
-            0,
-            0
-        ],
-        "orientation": {
-            "axis": [
-                1,
-                0,
-                0
-            ],
-            "angle": 0
-        }
-    }
+    ]
 }
