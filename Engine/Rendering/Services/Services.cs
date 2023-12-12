@@ -1,6 +1,6 @@
 namespace Kalasrapier.Engine.Rendering.Services;
 
-public static class Locator
+public class Locator
 {
     public static TextureManager TextureManager { get; private set; } = null!;
     public static MeshManager MeshManager { get; private set; } = null!;

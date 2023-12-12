@@ -6,14 +6,14 @@ namespace Kalasrapier.Engine.ImportJson;
 public record ActorJson
 {
     [JsonPropertyName("id")] public string Id { get; init; }
-    [JsonPropertyName("render_pipeline")] public string? RenderPipeline { get; init; }
+    [JsonPropertyName("render_pipeline")] public List<string> RenderPipeline { get; init; } = new();
     [JsonPropertyName("mesh_id")] public string? MeshId { get; init; }
     [JsonPropertyName("texture_id")] public string? TextureId { get; init; }
     [JsonPropertyName("enabled")] public bool Enabled { get; init; } = true;
     [JsonPropertyName("position")] public float[] Position { get; init; } = { 0, 0, 0 };
     [JsonPropertyName("scale")] public float[] Scale { get; init; } = { 1, 1, 1 };
     [JsonPropertyName("orientation")] public OrientationJson Orientation { get; init; } = new();
-    [JsonPropertyName("children")] public List<ActorJson> Children { get; init; } = [];
+    [JsonPropertyName("children")] public List<ActorJson> Children { get; init; } = new();
     [JsonPropertyName("collider")] public ColliderType Collider { get; init; } = ColliderType.None;
 
     [JsonPropertyName("additional_attributes")]

@@ -13,10 +13,12 @@ public class Actor
     public string Id { get; set; } = "NO_ACTOR_ID";
     public Collider? Collider { get; set; } = null;
     private Actor? Parent { get; set; }
-    private List<Actor> Children { get; set; } = [];
+    private List<Actor> Children { get; set; } = new();
 
-    // TODO: change this to a bitmask
-    public string? RenderPipeline { get; set; }
+    /// <summary>
+    /// Bitmask of pipelines that this actor is subscribed to.
+    /// </summary>
+    public ulong RenderPipeline { get; set; }
 
     public Actor()
     {

@@ -14,9 +14,14 @@ public class RenderPipeline
     // By default we don't even request any vertex info data
     public virtual VertexInfo VertexInfo => 0;
 
-    public RenderPipeline(Shader shader)
+    protected RenderPipeline(Shader shader)
     {
         Shader = shader;
+    }
+    
+    public bool BelongsToPipeline(Actor actor)
+    {
+        return (actor.RenderPipeline & Id) != 0;
     }
 
     // Given the list of actors subscribed to the pipeline, generated the assets for later usage.

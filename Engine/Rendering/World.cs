@@ -1,6 +1,5 @@
 using Kalasrapier.Engine.ImportJson;
 using Kalasrapier.Engine.Rendering.Services;
-using OpenTK.Graphics.OpenGL;
 using OpenTK.Windowing.Desktop;
 
 namespace Kalasrapier.Engine.Rendering;
@@ -9,7 +8,7 @@ public class World
 {
     public GameWindow Window { get; private set; }
 
-    private List<RenderPipeline> _renderPipelines = [];
+    private List<RenderPipeline> _renderPipelines = new();
 
     public World(GameWindow window)
     {
@@ -59,7 +58,7 @@ public class World
                 .Render(
                     Locator.ActorManager.GetActors()
                         .Where(actor =>
-                            actor.Enabled && renderPipeline.Tag == actor.RenderPipeline));
+                            actor.Enabled && renderPipeline.BelongsToPipeline(actor)));
         }
     }
 }

@@ -96,7 +96,7 @@ public class GameManager
         GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         GL.Enable(EnableCap.CullFace);
         GL.Enable(EnableCap.DepthTest);
-        Start(Locator.World);
+        Preload(Locator.World);
         Locator.World.Start();
     }
 
@@ -113,7 +113,11 @@ public class GameManager
         _window.SwapBuffers();
     }
 
-    protected virtual void Start(World world)
+    /// <summary>
+    /// Thing to do before the world starts. Loading scenes, render pipelines, extended actors, etc.
+    /// </summary>
+    /// <param name="world"></param>
+    protected virtual void Preload(World world)
     {
     }
 }

@@ -1,7 +1,7 @@
 namespace Kalasrapier.Engine.Rendering.Services;
 
 /// 
-public class ActorManager
+public class ActorManager : Locator
 {
     private Dictionary<string, Actor> Actors { get; set; } = new();
     // private List<Actor> Actors { get; set } = new();
