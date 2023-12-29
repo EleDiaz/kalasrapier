@@ -16,10 +16,10 @@ namespace Kalasrapier.Game
 
     public class Controller : IController
     {
-        private Vector3 _movementInput = new Vector3();
-        private Vector2 _armAngles = new Vector2();
+        private Vector3 _movementInput;
+        private Vector2 _armAngles;
 
-        private bool _active = false;
+        private bool _active;
 
         public float Speed { get; set; }
         public float MouseSensibility { get; set; }

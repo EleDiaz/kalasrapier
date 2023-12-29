@@ -85,7 +85,7 @@ public class MeshInfo
     public VertexInfo VertexInfo { get; set; }
 
     // Information relate to material slots
-    public IndicesPerMaterialJson[]? Slots;
+    public IndicesPerMaterialData[]? Slots;
 
     // Default Materials applied to the mesh.
     public Material[]? Materials;
@@ -104,9 +104,9 @@ public class MeshInfo
 }
 
 
-public class MeshManager
+public class MeshManager : Base
 {
-    private Dictionary<string, MeshJson> _meshesJson = new();
+    private Dictionary<string, MeshData> _meshesJson = new();
 
     public Dictionary<string, MeshInfo> MeshesInfo { get; } = new();
 
@@ -120,7 +120,7 @@ public class MeshManager
     {
         var meshData = File.ReadAllText(file);
 
-        var mesh = JsonSerializer.Deserialize<MeshJson>(meshData);
+        var mesh = JsonSerializer.Deserialize<MeshData>(meshData);
         if (mesh is null)
         {
             throw new Exception(String.Format("Mesh is null file: {0}, id: {1}", file, id));
@@ -139,15 +139,15 @@ public class MeshManager
         LoadMeshDSA(mesh_id, ref vertexArray, ref indexArray, info);
     }
 
-    public void LoadMaterials(string mesh_id, MeshJson meshJson)
+    public void LoadMaterials(string mesh_id, MeshData meshData)
     {
         var meshInfo = MeshesInfo[mesh_id];
-        meshInfo.Slots = meshJson.IndexSlots;
+        meshInfo.Slots = meshData.IndexSlots;
 
-        meshInfo.Materials = new Material[meshJson.Materials?.Length ?? 0];
+        meshInfo.Materials = new Material[meshData.Materials?.Length ?? 0];
         for (int i = 0; i < meshInfo.Materials.Length; i++)
         {
-            meshInfo.Materials[i] = new Material(meshJson.Materials![i]);
+            meshInfo.Materials[i] = new Material(meshData.Materials![i]);
         }
     }
 
@@ -260,29 +260,29 @@ public class MeshManager
     }
 
         
-    public VertexInfo GetInfo(MeshJson meshJson)
+    public VertexInfo GetInfo(MeshData meshData)
     {
         var flags = VertexInfo.VERTICES;
-        if (meshJson.ColorData is not null)
+        if (meshData.ColorData is not null)
             flags |= VertexInfo.COLORS;
-        if (meshJson.UvData is not null)
+        if (meshData.UvData is not null)
             flags |= VertexInfo.UV;
-        if (meshJson.NormalData is not null)
+        if (meshData.NormalData is not null)
             flags |= VertexInfo.NORMALS;
-        if (meshJson.WeightData is not null)
+        if (meshData.WeightData is not null)
             flags |= VertexInfo.WEIGHTS;
 
         return flags;
     }
 
     // TODO: validate size of each component
-    public bool Validate(MeshJson meshJson)
+    public bool Validate(MeshData meshData)
     {
             
         return true;
     }
 
-    public void GetVertexArray(MeshJson meshJson, out float[] vertexData, VertexInfo info)
+    public void GetVertexArray(MeshData meshData, out float[] vertexData, VertexInfo info)
     {
         // We can't directly use the vertex length when we work with UVs. Due, that each UV is linked to a vertex
         // inside a triangle primitive and those primitive could have those vertices 0 or more times shared with others.
@@ -294,19 +294,19 @@ public class MeshManager
         // each polygon primitive.
 
         var getSize = (VertexInfo info) => {
-            return meshJson.UvData?.Length / 2 * info.ComponentSize();
+            return meshData.UvData?.Length / 2 * info.ComponentSize();
         };
 
-        var verticesLength = getSize(VertexInfo.VERTICES) ?? meshJson.VertexData.Length;
+        var verticesLength = getSize(VertexInfo.VERTICES) ?? meshData.VertexData.Length;
         // Normals are associate to a vertex 1-1. This could change be to achieve a Flat Shading where each triangle
         // would share the face normal.
-        var normalLength = getSize(VertexInfo.NORMALS) ?? meshJson.NormalData?.Length ?? 0;
+        var normalLength = getSize(VertexInfo.NORMALS) ?? meshData.NormalData?.Length ?? 0;
         // Colors are associate to a vertex 1-1.
-        var colorsLength = getSize(VertexInfo.COLORS) ?? meshJson.ColorData?.Length ?? 0;
+        var colorsLength = getSize(VertexInfo.COLORS) ?? meshData.ColorData?.Length ?? 0;
         // Weights are associate to a vertex 1-1.
-        var weightsLength = getSize(VertexInfo.COLORS) ?? meshJson.WeightData?.Length ?? 0;
+        var weightsLength = getSize(VertexInfo.COLORS) ?? meshData.WeightData?.Length ?? 0;
 
-        var uvLength = meshJson.UvData?.Length ?? 0;
+        var uvLength = meshData.UvData?.Length ?? 0;
 
         var size = verticesLength + normalLength + colorsLength + weightsLength + uvLength;
 
@@ -335,7 +335,7 @@ public class MeshManager
             {
                 for (int j = 0; j < component.ComponentSize(); j++)
                 {
-                    vertexData[ix++] = array[3 * meshJson.IndexData![index] + j];
+                    vertexData[ix++] = array[3 * meshData.IndexData![index] + j];
                 }
                 ix--;
             }
@@ -350,24 +350,24 @@ public class MeshManager
         {
             if (i % strideSize < vertexOffset)
             {
-                fillValuesWithIndices(ref vertexData, ref i, ref vI, meshJson.VertexData, VertexInfo.VERTICES);
+                fillValuesWithIndices(ref vertexData, ref i, ref vI, meshData.VertexData, VertexInfo.VERTICES);
             }
             else if (i % strideSize < colorOffset)
             {
-                fillValuesWithIndices(ref vertexData, ref i, ref cI, meshJson.ColorData!, VertexInfo.COLORS);
+                fillValuesWithIndices(ref vertexData, ref i, ref cI, meshData.ColorData!, VertexInfo.COLORS);
             }
             else if (i % strideSize < uvOffset)
             {
-                vertexData[i] = meshJson.UvData![uvI];
+                vertexData[i] = meshData.UvData![uvI];
                 uvI++;
             }
             else if (i % strideSize < normalOffset)
             {
-                fillValuesWithIndices(ref vertexData, ref i, ref nI, meshJson.NormalData!, VertexInfo.NORMALS);
+                fillValuesWithIndices(ref vertexData, ref i, ref nI, meshData.NormalData!, VertexInfo.NORMALS);
             }
             else if (i % strideSize < weightsOffset)
             {
-                fillValuesWithIndices(ref vertexData, ref i, ref wI, meshJson.WeightData!, VertexInfo.WEIGHTS);
+                fillValuesWithIndices(ref vertexData, ref i, ref wI, meshData.WeightData!, VertexInfo.WEIGHTS);
             }
         }
     }
@@ -376,15 +376,15 @@ public class MeshManager
     // or we need the use of several index buffers to render different parts of our mesh. The index buffer will
     // only produce a penalty due the simple fact is require a prefetch of those vertices. Where the simple method
     // DrawArrays benefits from data location.
-    public void GetIndexArray(MeshJson meshJson, out uint[] indexArray)
+    public void GetIndexArray(MeshData meshData, out uint[] indexArray)
     {
-        if (meshJson.IndexData is null)
+        if (meshData.IndexData is null)
         {
             throw new Exception("Mesh didn't come with indices");
         }
 
-        indexArray = new uint[meshJson.IndexData!.Length];
-        meshJson.IndexData!.CopyTo(indexArray, 0);
+        indexArray = new uint[meshData.IndexData!.Length];
+        meshData.IndexData!.CopyTo(indexArray, 0);
     }
 
     public List<Vector3> GetVertexList(string? actorMeshId)

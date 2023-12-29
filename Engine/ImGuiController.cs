@@ -1,12 +1,12 @@
-using ImGuiNET;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using ImGuiNET;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using System.Diagnostics;
-
 using static Kalasrapier.Engine.Utils;
+using Vector2 = System.Numerics.Vector2;
 
 namespace Kalasrapier.Engine;
 
@@ -33,9 +33,9 @@ public class ImGuiController : IDisposable
     private int _windowWidth;
     private int _windowHeight;
 
-    private System.Numerics.Vector2 _scaleFactor = System.Numerics.Vector2.One;
+    private Vector2 _scaleFactor = Vector2.One;
 
-    private static bool KHRDebugAvailable = false;
+    private static bool KHRDebugAvailable;
 
     private int GLVersion;
     private bool CompatibilityProfile;
@@ -193,7 +193,7 @@ void main()
         GL.BindTexture(TextureTarget.Texture2D, prevTexture2D);
         GL.ActiveTexture((TextureUnit)prevActiveTexture);
 
-        io.Fonts.SetTexID((IntPtr)_fontTexture);
+        io.Fonts.SetTexID(_fontTexture);
 
         io.Fonts.ClearTexData();
     }
@@ -235,7 +235,7 @@ void main()
     private void SetPerFrameImGuiData(float deltaSeconds)
     {
         ImGuiIOPtr io = ImGui.GetIO();
-        io.DisplaySize = new System.Numerics.Vector2(
+        io.DisplaySize = new Vector2(
             _windowWidth / _scaleFactor.X,
             _windowHeight / _scaleFactor.Y);
         io.DisplayFramebufferScale = _scaleFactor;
@@ -259,7 +259,7 @@ void main()
 
         var screenPoint = new Vector2i((int)wnd.MousePosition.X, (int)wnd.MousePosition.Y);
         var point = screenPoint;
-        io.MousePos = new System.Numerics.Vector2(point.X, point.Y);
+        io.MousePos = new Vector2(point.X, point.Y);
 
         foreach (Keys key in Enum.GetValues(typeof(Keys)))
         {
@@ -287,7 +287,7 @@ void main()
         PressedChars.Add(keyChar);
     }
 
-    internal void MouseScroll(Vector2 offset)
+    internal void MouseScroll(OpenTK.Mathematics.Vector2 offset)
     {
         ImGuiIOPtr io = ImGui.GetIO();
 
@@ -445,27 +445,25 @@ void main()
                 {
                     throw new NotImplementedException();
                 }
+
+                GL.ActiveTexture(TextureUnit.Texture0);
+                GL.BindTexture(TextureTarget.Texture2D, (int)pcmd.TextureId);
+                CheckGlError("Texture");
+
+                // We do _windowHeight - (int)clip.W instead of (int)clip.Y because gl has flipped Y when it comes to these coordinates
+                var clip = pcmd.ClipRect;
+                GL.Scissor((int)clip.X, _windowHeight - (int)clip.W, (int)(clip.Z - clip.X), (int)(clip.W - clip.Y));
+                CheckGlError("Scissor");
+
+                if ((io.BackendFlags & ImGuiBackendFlags.RendererHasVtxOffset) != 0)
+                {
+                    GL.DrawElementsBaseVertex(PrimitiveType.Triangles, (int)pcmd.ElemCount, DrawElementsType.UnsignedShort, (IntPtr)(pcmd.IdxOffset * sizeof(ushort)), unchecked((int)pcmd.VtxOffset));
+                }
                 else
                 {
-                    GL.ActiveTexture(TextureUnit.Texture0);
-                    GL.BindTexture(TextureTarget.Texture2D, (int)pcmd.TextureId);
-                    CheckGlError("Texture");
-
-                    // We do _windowHeight - (int)clip.W instead of (int)clip.Y because gl has flipped Y when it comes to these coordinates
-                    var clip = pcmd.ClipRect;
-                    GL.Scissor((int)clip.X, _windowHeight - (int)clip.W, (int)(clip.Z - clip.X), (int)(clip.W - clip.Y));
-                    CheckGlError("Scissor");
-
-                    if ((io.BackendFlags & ImGuiBackendFlags.RendererHasVtxOffset) != 0)
-                    {
-                        GL.DrawElementsBaseVertex(PrimitiveType.Triangles, (int)pcmd.ElemCount, DrawElementsType.UnsignedShort, (IntPtr)(pcmd.IdxOffset * sizeof(ushort)), unchecked((int)pcmd.VtxOffset));
-                    }
-                    else
-                    {
-                        GL.DrawElements(BeginMode.Triangles, (int)pcmd.ElemCount, DrawElementsType.UnsignedShort, (int)pcmd.IdxOffset * sizeof(ushort));
-                    }
-                    CheckGlError("Draw");
+                    GL.DrawElements(BeginMode.Triangles, (int)pcmd.ElemCount, DrawElementsType.UnsignedShort, (int)pcmd.IdxOffset * sizeof(ushort));
                 }
+                CheckGlError("Draw");
             }
         }
 

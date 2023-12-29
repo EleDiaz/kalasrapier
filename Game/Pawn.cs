@@ -1,6 +1,5 @@
-using OpenTK.Mathematics;
 using Kalasrapier.Engine.Rendering;
-using Kalasrapier.Engine.Rendering.Services;
+using OpenTK.Mathematics;
 
 namespace Kalasrapier.Game
 {
@@ -16,17 +15,19 @@ namespace Kalasrapier.Game
 
         public override void Start()
         {
-            _camera = Locator.ActorManager.GetMainCamera();
+            _camera = ActorManager.GetMainCamera();
             _controller = new Controller();
             Speed = 1f;
             Enabled = true;
             MeshId = "pawn";
-            Id = "pawn";
+            Tag = "pawn";
+
+            ActorManager.FindActorsByTag("");
         }
 
         public override void Update(double deltaTime)
         {
-            _controller!.UpdateState(Locator.World.Window);
+            _controller!.UpdateState(World.Window);
 
             var movement = _controller.GetMovement() * Speed * (float)deltaTime;
             var angles = _controller.GetArmDirection();

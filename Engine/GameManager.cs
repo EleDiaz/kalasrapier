@@ -10,28 +10,32 @@ namespace Kalasrapier.Engine;
 
 public class GameManager
 {
-    private GameWindow _window;
-    private ImGuiController _imGuiController;
+    private GameWindow? _window;
+    private World? _world;
+    private ImGuiController? _imGuiController;
 
     public GameManager()
     {
         BuildWindow();
         if (_window != null)
-            Locator.Defaults(new World(_window));
+        {
+            _world = new World(_window);
+            Base.SetDefaultsBaseWithNewWorld(_world);
+        }
     }
 
     public void Run()
     {
         using (_window)
         {
-            _window.Run();
+            _window!.Run();
         }
     }
 
     private void BuildWindow()
     {
         // todo: make external
-        var nativeWindowSettings = new NativeWindowSettings()
+        var nativeWindowSettings = new NativeWindowSettings
         {
             API = ContextAPI.OpenGL,
             APIVersion = new Version(4, 6),
@@ -73,44 +77,44 @@ public class GameManager
     {
         // When the window gets resized, we have to call GL.Viewport to resize OpenGL's viewport to match the new size.
         // If we don't, the NDC will no longer be correct.
-        GL.Viewport(0, 0, _window.ClientSize.X, _window.ClientSize.Y);
+        GL.Viewport(0, 0, _window!.ClientSize.X, _window!.ClientSize.Y);
 
-        _imGuiController?.WindowResized(_window.ClientSize.X, _window.ClientSize.Y);
+        _imGuiController?.WindowResized(_window!.ClientSize.X, _window!.ClientSize.Y);
     }
 
     private void WindowOnUpdateFrame(FrameEventArgs obj)
     {
-        var input = _window.KeyboardState;
+        var input = _window!.KeyboardState;
         if (input.IsKeyDown(Keys.Escape))
         {
             _window.Close();
         }
 
-        Locator.World.Update(obj.Time);
+        _world!.Update(obj.Time);
     }
 
     private void WindowOnLoad()
     {
-        _imGuiController = new ImGuiController(_window.ClientSize.X, _window.ClientSize.Y);
+        _imGuiController = new ImGuiController(_window!.ClientSize.X, _window!.ClientSize.Y);
 
         GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         GL.Enable(EnableCap.CullFace);
         GL.Enable(EnableCap.DepthTest);
-        Preload(Locator.World);
-        Locator.World.Start();
+        Preload(_world!);
+        _world!.Start();
     }
 
 
     private void WindowOnRenderFrame(FrameEventArgs e)
     {
-        _imGuiController?.Update(_window, (float)e.Time);
+        _imGuiController?.Update(_window!, (float)e.Time);
 
         // Render
-        Locator.World.Render();
+        _world!.Render();
 
         _imGuiController?.Render();
         Utils.CheckGlError("End of frame");
-        _window.SwapBuffers();
+        _window!.SwapBuffers();
     }
 
     /// <summary>

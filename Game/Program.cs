@@ -10,7 +10,7 @@ public class MyGameManager : GameManager
     {
         world.AddRenderPipeline(new DefaultPipeline());
         world.LoadScene("Scenes/simple.json");
-        Locator.ActorManager.ExtendActorBehavior<Pawn>("pawn_0");
+        ActorManager.OverwriteActor<Pawn>("pawn_0");
     }
 
 

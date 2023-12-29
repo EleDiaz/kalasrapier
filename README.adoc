@@ -1,0 +1,20 @@
+= Kala's Rapier
+
+Kalasrapier is a small framework around OpenGL 4.6 develop from a base code provided by @iestevez.
+
+This is highly modified version, where we apply several patterns to ease the development of a very basic game.
+
+== Build and run
+
+We are targeting .NET 8 due to "I have those installed", but it should be possible to lower it to 7 or even lower.
+
+[source, bash]
+----
+dotnet build
+dotnet run
+----
+
+== Features
+
+
+

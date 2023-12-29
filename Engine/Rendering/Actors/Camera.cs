@@ -1,7 +1,8 @@
+using Kalasrapier.Engine.ImportJson;
 using Kalasrapier.Engine.Rendering.Services;
 using OpenTK.Mathematics;
 
-namespace Kalasrapier.Engine.Rendering;
+namespace Kalasrapier.Engine.Rendering.Actors;
 
 // Do not modified on any kind of update loop the camera rotation or position through Transform component due to
 // the requirement of extracting those values int each component (yaw, pitch, roll)
@@ -11,14 +12,21 @@ public class Camera : Actor
 
     // The field of view of the camera (radians)
     private float _fov = MathHelper.PiOver2;
+    
+    protected Singleton<CameraManager> CameraManager { get; set; }
+
+    public Camera(ActorData template): base(template)
+    {
+        
+    }
 
     public float AspectRatio { private get; set; }
 
     public override void Start()
     {
-        Id = Tag;
+        base.Tag = Tag;
         Enabled = true;
-        var ratio = Locator.World.Window.AspectRatio ?? (1, 1);
+        var ratio = World.Window.AspectRatio ?? (1, 1);
         AspectRatio = (ratio.numerator / (float)ratio.denominator);
     }
 

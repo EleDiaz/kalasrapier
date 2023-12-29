@@ -1,5 +1,7 @@
 using Kalasrapier.Engine;
 using Kalasrapier.Engine.Rendering;
+using Kalasrapier.Engine.Rendering.Actors;
+using Kalasrapier.Engine.Rendering.Components;
 using Kalasrapier.Engine.Rendering.Services;
 using OpenTK.Graphics.OpenGL4;
 
@@ -22,11 +24,12 @@ namespace Kalasrapier.Game
         {
             foreach (var actor in actors)
             {
-                if (actor.MeshId != null) Locator.MeshManager.LoadMesh(actor.MeshId, VertexInfo);
+                var mesh = actor.GetComponent<Mesh>();
+                if (mesh != null) mesh.MeshManager.LoadMesh(actor.MeshId, VertexInfo);
 
                 if (actor.TextureId is not null)
                 {
-                    Locator.TextureManager.LoadTexture(actor.TextureId);
+                    Base.TextureManager.LoadTexture(actor.TextureId);
                 }
             }
         }
@@ -34,7 +37,7 @@ namespace Kalasrapier.Game
         public override void Render(IEnumerable<Actor> actors)
         {
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            var camera = Locator.ActorManager.GetMainCamera();
+            var camera = Base.ActorManager.GetMainCamera();
 
             Shader.Use();
             Shader.SetMatrix4("view", camera.GetViewMatrix());
@@ -42,10 +45,10 @@ namespace Kalasrapier.Game
 
             foreach (var actor in actors)
             {
-                var mesh = Locator.MeshManager.MeshesInfo[actor.MeshId!];
+                var mesh = Base.MeshManager.MeshesInfo[actor.MeshId!];
                 mesh.SetActiveMesh();
                 Shader.SetMatrix4("model", actor.GetWorldTransform());
-                var texture = Locator.TextureManager.GetTexture(actor.TextureId!);
+                var texture = Base.TextureManager.GetTexture(actor.TextureId!);
                 texture.Use(TextureUnit.Texture0);
                 // Use the drawing primitives
 

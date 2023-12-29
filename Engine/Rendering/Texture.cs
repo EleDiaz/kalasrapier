@@ -1,6 +1,6 @@
 using OpenTK.Graphics.OpenGL4;
-using PixelFormat = OpenTK.Graphics.OpenGL4.PixelFormat;
 using StbImageSharp;
+using PixelFormat = OpenTK.Graphics.OpenGL4.PixelFormat;
 
 namespace Kalasrapier.Engine.Rendering;
 

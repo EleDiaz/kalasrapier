@@ -1,59 +1,49 @@
 using Kalasrapier.Engine.ImportJson;
+using Kalasrapier.Engine.Rendering.Components;
+using Kalasrapier.Engine.Rendering.Services;
 using OpenTK.Mathematics;
-using Vector3 = OpenTK.Mathematics.Vector3;
 
-namespace Kalasrapier.Engine.Rendering;
+namespace Kalasrapier.Engine.Rendering.Actors;
 
 public class Actor
 {
-    public string? MeshId { get; set; }
-    public string? TextureId { get; set; }
+    public int Id { get; set; }
+    public string Tag { get; set; } = "NO_ACTOR_ID";
     public Matrix4 Transform { get; set; } = Matrix4.Identity;
     public bool Enabled { get; set; } = true;
-    public string Id { get; set; } = "NO_ACTOR_ID";
-    public Collider? Collider { get; set; } = null;
     private Actor? Parent { get; set; }
     private List<Actor> Children { get; set; } = new();
 
-    /// <summary>
-    /// Bitmask of pipelines that this actor is subscribed to.
-    /// </summary>
-    public ulong RenderPipeline { get; set; }
+    
+    private Singleton<ActorManager> ActorManager { get; set; }
+    
+    private Dictionary<Type, Component> Components { get; set; } = new();
+
 
     public Actor()
     {
     }
 
-    public Actor(Actor actor)
-    {
-        TemplateActor(actor);
-    }
-
     public void TemplateActor(Actor actor)
     {
-        MeshId = actor.MeshId;
-        TextureId = actor.TextureId;
         Transform = actor.Transform;
         Enabled = actor.Enabled;
-        Id = actor.Id;
+        Tag = actor.Tag;
         Parent = actor.Parent;
         Children = actor.Children;
-        RenderPipeline = actor.RenderPipeline;
     }
 
-    public Actor(ActorJson actorJson)
+    public Actor(ActorData actorData)
     {
-        MeshId = actorJson.MeshId;
-        TextureId = actorJson.TextureId;
-        Id = actorJson.Id;
-        Enabled = actorJson.Enabled;
+        Tag = actorData.Id;
+        Enabled = actorData.Enabled;
 
-        var scale = new Vector3(actorJson.Scale[0], actorJson.Scale[1], actorJson.Scale[2]);
-        var axis = new Vector3(actorJson.Orientation.Axis[0], actorJson.Orientation.Axis[1],
-            actorJson.Orientation.Axis[2]);
-        var position = new Vector3(actorJson.Position[0], actorJson.Position[1], actorJson.Position[2]);
+        var scale = new Vector3(actorData.Scale[0], actorData.Scale[1], actorData.Scale[2]);
+        var axis = new Vector3(actorData.Orientation.Axis[0], actorData.Orientation.Axis[1],
+            actorData.Orientation.Axis[2]);
+        var position = new Vector3(actorData.Position[0], actorData.Position[1], actorData.Position[2]);
 
-        Transform = Matrix4.CreateScale(scale) * Matrix4.CreateFromAxisAngle(axis, actorJson.Orientation.Angle) *
+        Transform = Matrix4.CreateScale(scale) * Matrix4.CreateFromAxisAngle(axis, actorData.Orientation.Angle) *
                     Matrix4.CreateTranslation(position);
     }
 
@@ -83,10 +73,8 @@ public class Actor
         {
             throw new Exception("Cannot set child because it already exists");
         }
-        else
-        {
-            Children.Add(actor);
-        }
+
+        Children.Add(actor);
     }
 
     public void UnLinkChild(Actor actor)
@@ -98,13 +86,7 @@ public class Actor
     public void InstantiateAsChild(Actor actor)
     {
         actor.SetParent(this);
-        Services.Locator.ActorManager.AddActor(actor);
-    }
-
-    // TODO: this should instantiate the actor as a child of the scene
-    public void Instantiate(Actor actor)
-    {
-        Services.Locator.ActorManager.AddActor(actor);
+        ActorManager.GetInstance().AddActor(actor);
     }
 
     public virtual void Start()
@@ -138,9 +120,26 @@ public class Actor
         {
             return Transform;
         }
-        else
-        {
-            return Parent.GetWorldTransform() * Transform;
-        }
+
+        return Parent.GetWorldTransform() * Transform;
+    }
+    
+    public T? GetComponent<T>() where T: Component
+    {
+        return Components[typeof(T).BaseType ?? typeof(T)] as T;
+    }
+    
+    public T AddComponent<T>() where T: Component, new()
+    {
+        var component = new T();
+        component.SetActor(this);
+        Components.Add(typeof(T).BaseType ?? typeof(T), component);
+        return component;
+    }
+    
+    public void AddComponent(Component component)
+    {
+        component.SetActor(this);
+        Components.Add(typeof(Component).BaseType ?? typeof(Component), component);
     }
 }

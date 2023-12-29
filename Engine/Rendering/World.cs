@@ -1,10 +1,11 @@
 using Kalasrapier.Engine.ImportJson;
+using Kalasrapier.Engine.Rendering.Actors;
 using Kalasrapier.Engine.Rendering.Services;
 using OpenTK.Windowing.Desktop;
 
 namespace Kalasrapier.Engine.Rendering;
 
-public class World
+public class World : Base
 {
     public GameWindow Window { get; private set; }
 
@@ -14,15 +15,19 @@ public class World
     {
         Window = window;
         // Initialize the services.
-        Locator.Defaults(this);
+        SetDefaultsBaseWithNewWorld(this);
     }
 
     public void LoadScene(string path)
     {
         SceneLoader.LoadScene(path);
         // Upgrade the Camera
-        var camera = Locator.ActorManager.ExtendActorBehavior<Camera>(Camera.Tag);
-        Locator.ActorManager.SetMainCamera(camera);
+        var template = ActorManager.GetTemplateActorData(Camera.Tag);
+        var camera = new Camera(template);
+        ActorManager.AddActor(camera);
+        
+        var camera1 = ActorManager.OverwriteActor<Camera>(Camera.Tag);
+        ActorManager.SetMainCamera(camera);
     }
 
     public ulong AddRenderPipeline(RenderPipeline renderPipeline)
@@ -34,7 +39,7 @@ public class World
 
     public void Start()
     {
-        foreach (var actor in Locator.ActorManager.GetActors().Where(actor => actor.Enabled))
+        foreach (var actor in ActorManager.GetActors().Where(actor => actor.Enabled))
         {
             actor.Start();
         }
@@ -42,7 +47,7 @@ public class World
 
     public void Update(double deltaTime)
     {
-        foreach (var actor in Locator.ActorManager.GetActors().Where(actor => actor.Enabled))
+        foreach (var actor in ActorManager.GetActors().Where(actor => actor.Enabled))
         {
             actor.Update(deltaTime);
         }
@@ -52,11 +57,10 @@ public class World
     {
         foreach (var renderPipeline in _renderPipelines)
         {
-            // Future implementations could use some frustum clipping to filter even more the actors
-            //
+            // TODO: Future implementations could use some frustum clipping to filter even more the actors
             renderPipeline
                 .Render(
-                    Locator.ActorManager.GetActors()
+                    ActorManager.GetActors()
                         .Where(actor =>
                             actor.Enabled && renderPipeline.BelongsToPipeline(actor)));
         }

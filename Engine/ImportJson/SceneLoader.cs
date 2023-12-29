@@ -1,13 +1,13 @@
 using System.Text.Json;
-using Kalasrapier.Engine.Rendering;
-using static Kalasrapier.Engine.Rendering.Services.Locator;
+using Kalasrapier.Engine.Rendering.Actors;
+using Kalasrapier.Engine.Rendering.Services;
 
 namespace Kalasrapier.Engine.ImportJson;
 
 /// <summary>
 /// :: SceneJson -> World -> World
 /// </summary>
-public class SceneLoader
+public class SceneLoader : Base
 {
     public static void LoadScene(string sceneFilePath)
     {
@@ -30,11 +30,13 @@ public class SceneLoader
         }
 
         // Actor Load
-        var sceneActor = new Actor { Enabled = true, Id = sceneJson.Id };
-        ActorManager.AddActor(sceneActor);
         foreach (var actor in sceneJson.Actors)
-        {
-            ActorManager.AddActorFromScene(sceneActor, new Actor(actor));
+        { 
+            var instancedActor = ActorManager.AddActor(new Actor(actor));
+            foreach (var componentData in actor.Components)
+            {
+                instancedActor.AddComponent(componentData.BuildComponent());
+            }
         }
 
         // Texture Load

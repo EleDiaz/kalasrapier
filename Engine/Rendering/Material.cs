@@ -9,10 +9,10 @@ public class Material
     public string Name;
     public float[] DiffuseColor;
 
-    public Material(MaterialJson materialJson)
+    public Material(MaterialData materialData)
     {
-        DiffuseColor = materialJson.DiffuseColor;
-        Name = materialJson.Name;
+        DiffuseColor = materialData.DiffuseColor;
+        Name = materialData.Name;
     }
 
     // TODO: Remove from here

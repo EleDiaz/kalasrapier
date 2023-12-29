@@ -1,35 +1,33 @@
 using System.Text.Json.Serialization;
 using Kalasrapier.Engine.Rendering;
+using Kalasrapier.Engine.Rendering.Components;
 
 namespace Kalasrapier.Engine.ImportJson;
 
-public record ActorJson
+public record ActorData
 {
-    [JsonPropertyName("id")] public string Id { get; init; }
-    [JsonPropertyName("render_pipeline")] public List<string> RenderPipeline { get; init; } = new();
-    [JsonPropertyName("mesh_id")] public string? MeshId { get; init; }
-    [JsonPropertyName("texture_id")] public string? TextureId { get; init; }
+    [JsonPropertyName("id")] public required string Id { get; init; }
     [JsonPropertyName("enabled")] public bool Enabled { get; init; } = true;
     [JsonPropertyName("position")] public float[] Position { get; init; } = { 0, 0, 0 };
     [JsonPropertyName("scale")] public float[] Scale { get; init; } = { 1, 1, 1 };
-    [JsonPropertyName("orientation")] public OrientationJson Orientation { get; init; } = new();
-    [JsonPropertyName("children")] public List<ActorJson> Children { get; init; } = new();
-    [JsonPropertyName("collider")] public ColliderType Collider { get; init; } = ColliderType.None;
-
-    [JsonPropertyName("additional_attributes")]
-    public Dictionary<string, object> AdditionalAttributes { get; init; } = new();
+    [JsonPropertyName("orientation")] public OrientationData Orientation { get; init; } = new();
+    [JsonPropertyName("children")] public List<ActorData> Children { get; init; } = new();
+    [JsonPropertyName("components")] public List<ComponentData> Components { get; init; } = new();
+    // [JsonPropertyName("render_pipeline")] public List<string> RenderPipeline { get; init; } = new();
+    // [JsonPropertyName("mesh_id")] public string? MeshId { get; init; }
+    // [JsonPropertyName("texture_id")] public string? TextureId { get; init; }
 }
 
-public record OrientationJson
+public record OrientationData
 {
-    [JsonPropertyName("axis")] public float[] Axis { get; init; } = new float[] { 0, 1f, 0 };
+    [JsonPropertyName("axis")] public float[] Axis { get; init; } = { 0, 1f, 0 };
     [JsonPropertyName("angle")] public float Angle { get; init; } = 0;
 }
 
-public record MeshJson
+public record MeshData
 {
     // 3 floats
-    [JsonPropertyName("vertex_data")] public float[] VertexData { get; init; }
+    [JsonPropertyName("vertex_data")] public required float[] VertexData { get; init; }
 
     // 2 floats
     [JsonPropertyName("uv_data")] public float[]? UvData { get; init; }
@@ -45,17 +43,17 @@ public record MeshJson
 
     // uints
     [JsonPropertyName("index_data")] public uint[]? IndexData { get; init; }
-    [JsonPropertyName("index_slots")] public IndicesPerMaterialJson[]? IndexSlots { get; init; }
-    [JsonPropertyName("materials")] public MaterialJson[]? Materials { get; init; }
+    [JsonPropertyName("index_slots")] public IndicesPerMaterialData[]? IndexSlots { get; init; }
+    [JsonPropertyName("materials")] public MaterialData[]? Materials { get; init; }
 }
 
-public record MaterialJson
+public record MaterialData
 {
-    [JsonPropertyName("name")] public string Name { get; init; }
-    [JsonPropertyName("diffuse_color")] public float[] DiffuseColor { get; init; }
+    [JsonPropertyName("name")] public required string Name { get; init; }
+    [JsonPropertyName("diffuse_color")] public required float[] DiffuseColor { get; init; }
 }
 
-public record IndicesPerMaterialJson
+public record IndicesPerMaterialData
 {
     [JsonPropertyName("start")] public uint Start { get; init; }
     [JsonPropertyName("offset")] public uint Offset { get; init; }
@@ -64,20 +62,20 @@ public record IndicesPerMaterialJson
 public record SceneJson
 {
     // Scene ID
-    [JsonPropertyName("id")] public string Id { get; init; }
-    [JsonPropertyName("meshes")] public MeshMetaJson[] Meshes { get; init; }
-    [JsonPropertyName("textures")] public TextureJson[] Textures { get; init; }
-    [JsonPropertyName("actors")] public ActorJson[] Actors { get; init; }
+    [JsonPropertyName("id")] public required string Id { get; init; }
+    [JsonPropertyName("meshes")] public required MeshMetaData[] Meshes { get; init; }
+    [JsonPropertyName("textures")] public required TextureData[] Textures { get; init; }
+    [JsonPropertyName("actors")] public required ActorData[] Actors { get; init; }
 }
 
-public record MeshMetaJson
+public record MeshMetaData
 {
-    [JsonPropertyName("file")] public string File { get; init; }
-    [JsonPropertyName("id")] public string Id { get; init; }
+    [JsonPropertyName("file")] public required string File { get; init; }
+    [JsonPropertyName("id")] public required string Id { get; init; }
 }
 
-public record TextureJson
+public record TextureData
 {
-    [JsonPropertyName("path")] public string Path { get; init; }
-    [JsonPropertyName("id")] public string Id { get; init; }
+    [JsonPropertyName("path")] public required string Path { get; init; }
+    [JsonPropertyName("id")] public required string Id { get; init; }
 }
