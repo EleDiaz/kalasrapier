@@ -13,29 +13,22 @@ public class Actor
     public bool Enabled { get; set; } = true;
     private Actor? Parent { get; set; }
     private List<Actor> Children { get; set; } = new();
-
     
-    private Singleton<ActorManager> ActorManager { get; set; }
+    // This is a transitional variable set when is being destroyed. This allows a path to fully destroy the
+    // Actor.
+    public bool ToBeDestroyed { get; private set; } = false;
+
+    public Director Director { get; }
     
     private Dictionary<Type, Component> Components { get; set; } = new();
 
-
-    public Actor()
+    public Actor(Director director)
     {
+        Director = director;
     }
 
-    public void TemplateActor(Actor actor)
-    {
-        Transform = actor.Transform;
-        Enabled = actor.Enabled;
-        Tag = actor.Tag;
-        Parent = actor.Parent;
-        Children = actor.Children;
-    }
-
-    public Actor(ActorData actorData)
-    {
-        Tag = actorData.Id;
+    public void ImportTemplate(ActorData actorData) {
+        Tag = actorData.Tag;
         Enabled = actorData.Enabled;
 
         var scale = new Vector3(actorData.Scale[0], actorData.Scale[1], actorData.Scale[2]);
@@ -86,7 +79,7 @@ public class Actor
     public void InstantiateAsChild(Actor actor)
     {
         actor.SetParent(this);
-        ActorManager.GetInstance().AddActor(actor);
+        Director.ActorManager.AddActor(actor);
     }
 
     public virtual void Start()
@@ -129,17 +122,41 @@ public class Actor
         return Components[typeof(T).BaseType ?? typeof(T)] as T;
     }
     
-    public T AddComponent<T>() where T: Component, new()
-    {
-        var component = new T();
-        component.SetActor(this);
-        Components.Add(typeof(T).BaseType ?? typeof(T), component);
-        return component;
-    }
+    // This implies a lot of problems with the initialization.
+    // So the components have to initialized by the user
+    // One Way is to use a factory method, it will be a future implementation
+    // public T AddComponent<T>() where T: Component, new()
+    // {
+    //     var component = new T();
+    //     component.SetActor(this);
+    //     Components.Add(typeof(T).BaseType ?? typeof(T), component);
+    //     return component;
+    // }
     
     public void AddComponent(Component component)
     {
         component.SetActor(this);
-        Components.Add(typeof(Component).BaseType ?? typeof(Component), component);
+        Components.Add(component.GetType(), component);
+    }
+
+    public void Destroy()
+    {
+        ToBeDestroyed = true;
+        Enabled = false;
+        foreach (var child in Children)
+        {
+            child.Destroy();
+        }
+        Children.Clear();
+        
+        foreach (var component in Components.Values)
+        {
+            component.Destroy();
+        }
+        Components.Clear();
+        
+        Parent?.UnLinkChild(this);
+        
+        Director.ActorManager.RemoveActor(this);
     }
 }

@@ -1,9 +1,11 @@
+using Kalasrapier.Engine.Rendering.Components;
+
 namespace Kalasrapier.Engine.Rendering.Services;
 
 /// <summary>
 /// A Helper class to manage textures
 /// </summary>
-public class TextureManager
+public class MaterialManager
 {
     private Dictionary<string, string> _paths = new();
     private Dictionary<string, Texture> _textures = new();

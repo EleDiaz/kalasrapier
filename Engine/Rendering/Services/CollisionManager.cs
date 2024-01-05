@@ -4,11 +4,19 @@ using OpenTK.Mathematics;
 
 namespace Kalasrapier.Engine.Rendering.Services;
 
-public class CollisionManager : Base
+public class CollisionManager
 {
+    private readonly ActorManager _actorManager;
     // Actual collisions going on.
     private HashSet<(int, int)> _collisionsLate = new();
     private HashSet<(int, int)> _collisionsNew = new();
+    
+    // TODO: Check if the ToBeDestroyed flag is set, and remove the actor from the collisions list.
+    
+    public CollisionManager(ActorManager actorManager)
+    {
+        _actorManager = actorManager;
+    }
 
     private void CollisionDetected(Actor actor1, Actor actor2)
     {
@@ -35,7 +43,7 @@ public class CollisionManager : Base
 
     public void CheckCollisions()
     {
-        var actors = ActorManager.GetActors().Where(actor => actor.GetComponent<Collider>() is not null)
+        var actors = _actorManager.GetActors().Where(actor => actor.GetComponent<Collider>() is not null)
             .Select((actor, i) => (actor, i)).ToList();
         if (actors.Count < 2)
             return;
@@ -53,8 +61,8 @@ public class CollisionManager : Base
 
         foreach (var (actorId1, actorId2) in _collisionsLate)
         {
-            var actor1 = ActorManager.FindActor(actorId1);
-            var actor2 = ActorManager.FindActor(actorId2);
+            var actor1 = _actorManager.FindActor(actorId1);
+            var actor2 = _actorManager.FindActor(actorId2);
             actor1.OnTriggerExit(actor2);
             actor2.OnTriggerExit(actor1);
         }

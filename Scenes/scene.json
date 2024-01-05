@@ -1,0 +1,209 @@
+{
+  "meshes": [
+    {
+      "file": "Meshes/wall.json",
+      "id": "wall"
+    },
+    {
+      "file": "Meshes/collectable.json",
+      "id": "collectable"
+    },
+    {
+      "file": "Meshes/pawn.json",
+      "id": "pawn"
+    },
+    {
+      "file": "Meshes/ring.json",
+      "id": "ring"
+    }
+  ],
+  "materials": {
+    "wall_paintings": [
+      {
+        "diffuse": [
+          1,
+          1,
+          1
+        ],
+        "texture": "painting_0"
+      },
+      {
+        "diffuse": [
+          1,
+          1,
+          1
+        ],
+        "texture": "painting_1"
+      },
+      {
+        "diffuse": [
+          1,
+          1,
+          1
+        ],
+        "texture": "painting_2"
+      },
+      {
+        "diffuse": [
+          1,
+          1,
+          1
+        ],
+        "texture": "painting_3"
+      }
+    ],
+    "ring": [
+      {
+        "diffuse": [
+          1,
+          1,
+          1
+        ],
+        "texture": "ring"
+      }
+    ],
+    "collectable": [
+      {
+        "diffuse": [
+          0,
+          1,
+          1
+        ]
+      }
+    ],
+    "pawn": [
+      {
+        "diffuse": [
+          1,
+          1,
+          1
+        ],
+        "texture": "pawn"
+      }
+    ]
+  },
+  "textures": [
+    {
+      "file": "Textures/painting_0.png",
+      "id": "painting_0"
+    },
+    {
+      "file": "Textures/painting_1.png",
+      "id": "painting_1"
+    },
+    {
+      "file": "Textures/painting_2.png",
+      "id": "painting_2"
+    },
+    {
+      "file": "Textures/painting_3.png",
+      "id": "painting_3"
+    },
+    {
+      "file": "Textures/pawn.png",
+      "id": "pawn"
+    },
+    {
+      "file": "Textures/ring.png",
+      "id": "ring"
+    }
+  ],
+  "actors_template": {
+    "pawn": {
+      "tag": "pawn",
+      "children": [
+        {
+          "tag": "ring"
+        }
+      ],
+      "components": [
+        {
+          "$type": "BoxCollider",
+          "autoGenerate": true
+        },
+        {
+          "$type": "Mesh",
+          "meshid": "pawn"
+        },
+        {
+          "$type": "Material",
+          "materialid": "pawn"
+        }
+      ]
+    },
+    "wall": {
+      "tag": "wall",
+      "components": [
+        {
+          "$type": "BoxCollider",
+          "autoGenerate": true
+        },
+        {
+          "$type": "Mesh",
+          "meshid": "pawn"
+        },
+        {
+          "$type": "Material",
+          "materialid": "pawn"
+        }
+      ]
+    }
+  },
+  "scene": [
+    {
+      "tag": "Sun",
+      "enabled": true,
+      "position": [
+        0,
+        5,
+        0
+      ],
+      "orientation": {
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "angle": -45
+      },
+      "components": [
+        {
+          "$type": "DirectionalLight",
+          "color": [
+            1,
+            1,
+            1
+          ],
+          "direction": [
+            0,
+            -1,
+            0
+          ],
+          "intensity": 1
+        }
+      ]
+    },
+    {
+      "tag": "Camera",
+      "enabled": true,
+      "position": [
+        0,
+        0,
+        -5
+      ],
+      "orientation": {
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "angle": 0
+      },
+      "components": [
+        {
+          "$type": "Camera"
+        }
+      ]
+    }
+  ]
+}

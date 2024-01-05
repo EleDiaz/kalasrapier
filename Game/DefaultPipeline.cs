@@ -3,81 +3,111 @@ using Kalasrapier.Engine.Rendering;
 using Kalasrapier.Engine.Rendering.Actors;
 using Kalasrapier.Engine.Rendering.Components;
 using Kalasrapier.Engine.Rendering.Services;
+using Kalasrapier.Engine.Rendering.Services.MeshManager;
 using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
 
-namespace Kalasrapier.Game
+namespace Kalasrapier.Game;
+
+public class DefaultRenderer : RendererMesh
 {
-    public class DefaultPipeline : RenderPipeline
+    public DefaultRenderer(Actor actor) : base(actor)
     {
-        public override string Tag => "DEFAULT_PIPELINE";
-        public override VertexInfo VertexInfo => VertexInfo.UV | VertexInfo.NORMALS | VertexInfo.VERTICES;
+    }
+}
 
-        const string VertexShader = "Shaders/material_vert.glsl";
-        const string FragmentShader = "Shaders/material_frag.glsl";
+public class DefaultPipeline : RenderPipeline
+{
+    public override VertexInfo VertexInfo => VertexInfo.UV | VertexInfo.NORMALS | VertexInfo.VERTICES;
 
-        public DefaultPipeline() :
-            base(new Shader(VertexShader, FragmentShader))
+    const string VertexShader = "Shaders/material_vert.glsl";
+    const string FragmentShader = "Shaders/material_frag.glsl";
+
+    private DirectionalLight? _directionalLight;
+    private Vector3 _defaultColor = new(1, 1, 1);
+
+    public DefaultPipeline() :
+        base(new Shader(VertexShader, FragmentShader))
+    {
+    }
+
+    public override bool BelongsToPipeline(Actor actor)
+    {
+        return actor.GetComponent<DefaultRenderer>() is not null;
+    }
+
+    public override void Setup(IEnumerable<Actor> actors, Director director)
+    {
+        uint[] indices;
+        float[] vertices;
+        foreach (var actor in actors)
         {
+            var mesh = actor.GetComponent<Mesh>();
+            var defaultRenderer = new DefaultRenderer(actor);
+            
+            if (mesh is null) {
+                continue;
+            }
+            mesh.GetVertexArray(out vertices, VertexInfo);
+            // This isnt necessary for this case indeed it has a penalty and no pro
+            mesh.GetIndexArray(out indices);
+            defaultRenderer.LoadMeshDSA(ref vertices, ref indices, VertexInfo);
+            actor.AddComponent(defaultRenderer);
         }
 
-        public override void Setup(IEnumerable<Actor> actors)
-        {
-            foreach (var actor in actors)
-            {
-                var mesh = actor.GetComponent<Mesh>();
-                if (mesh != null) mesh.MeshManager.LoadMesh(actor.MeshId, VertexInfo);
+        _directionalLight = director.ActorManager.GetActors()
+            .Select(actor => actor.GetComponent<DirectionalLight>()).First();
+    }
 
-                if (actor.TextureId is not null)
-                {
-                    Base.TextureManager.LoadTexture(actor.TextureId);
-                }
-            }
+    public override void Render(IEnumerable<Actor> actors, Director director)
+    {
+        GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+        var camera = director.Cameras.ActiveCamera;
+        if (camera is null || _directionalLight is null)
+        {
+            return;
         }
 
-        public override void Render(IEnumerable<Actor> actors)
+        Shader.Use();
+        Shader.SetMatrix4("view", camera.GetViewMatrix());
+        Shader.SetMatrix4("projection", camera.GetProjectionMatrix());
+
+        Shader.SetVector3("light_direction", _directionalLight.Direction);
+        Shader.SetVector3("light_color", _directionalLight.Color);
+        Shader.SetFloat("light_intensity", _directionalLight.Intensity);
+
+        foreach (var actor in actors)
         {
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            var camera = Base.ActorManager.GetMainCamera();
-
-            Shader.Use();
-            Shader.SetMatrix4("view", camera.GetViewMatrix());
-            Shader.SetMatrix4("projection", camera.GetProjectionMatrix());
-
-            foreach (var actor in actors)
+            var mesh = actor.GetComponent<Mesh>();
+            var renderer = actor.GetComponent<DefaultRenderer>();
+            var material = actor.GetComponent<Material>();
+            if (mesh is null || renderer is null || material is null)
             {
-                var mesh = Base.MeshManager.MeshesInfo[actor.MeshId!];
-                mesh.SetActiveMesh();
-                Shader.SetMatrix4("model", actor.GetWorldTransform());
-                var texture = Base.TextureManager.GetTexture(actor.TextureId!);
-                texture.Use(TextureUnit.Texture0);
-                // Use the drawing primitives
-
-                if (mesh.Slots is null)
-                {
-                    if (VertexInfo.HasFlag(VertexInfo.UV))
-                    {
-                        // With UV our mesh replicate the vertices making the indexArray useless
-                        GL.DrawArrays(PrimitiveType.Triangles, 0, mesh.IndicesLenght);
-                    }
-                    else
-                    {
-                        // https://docs.gl/gl4/glDrawElements
-                        GL.DrawElements(PrimitiveType.Triangles, mesh.IndicesLenght, DrawElementsType.UnsignedInt, 0);
-                    }
-                }
-                else
-                {
-                    // Make a draw call for each texture color
-                    for (int i = 0; i < mesh.Slots.Length; i++)
-                    {
-                        mesh.Materials![i].SetActive(Shader);
-                        GL.DrawElements(PrimitiveType.Triangles, (int)mesh.Slots[i].Offset,
-                            DrawElementsType.UnsignedInt,
-                            (int)(mesh.Slots[i].Start * sizeof(uint)));
-                    }
-                }
-                Utils.CheckGlError("Draw Mesh: " + actor.MeshId);
+                continue;
             }
+
+            renderer.SetActiveMesh();
+            Shader.SetMatrix4("model", actor.GetWorldTransform());
+
+            Shader.SetVector3("diffuse", _defaultColor);
+
+            var materialsAmount = Math.Min(material.Slots.Count, renderer.Slots?.Length ?? 0);
+            
+            for (int i = 0; i < materialsAmount ; i++)
+            {
+                var indexSlot = renderer!.Slots![i];
+                var materialSlot = material.Slots[i];
+                materialSlot.BaseTexture?.Use(TextureUnit.Texture0);
+                Shader.SetVector3("diffuse", materialSlot.DiffuseColor);
+                GL.DrawArrays(PrimitiveType.Triangles, (int)indexSlot.Start, (int)indexSlot.Offset);
+            }
+
+            if (materialsAmount == 0)
+            {
+                GL.DrawArrays(PrimitiveType.Triangles, 0, renderer.IndicesLenght);
+            }
+
+            Utils.CheckGlError("Draw Mesh: " + mesh.MeshId + " With Actor: " + actor.Tag);
         }
     }
 }

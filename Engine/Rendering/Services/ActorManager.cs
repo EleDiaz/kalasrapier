@@ -12,9 +12,14 @@ public class ActorManager
 
     // Hashmap of actors, indexed by generated id, wont be two actors with the same id
     private Dictionary<int, Actor> Actors { get; set; } = new();
-    
+
     // ID counter
     private int NextId { get; set; } = 1;
+
+    public void LoadActorData(ActorData actorData)
+    {
+        ActorsData.Add(actorData.Tag, actorData);
+    }
 
     public T AddActor<T>(T actor)
         where T : Actor
@@ -22,25 +27,6 @@ public class ActorManager
         actor.Id = NextId;
         Actors.Add(NextId++, actor);
         return actor;
-    }
-    
-    public ActorData GetTemplateActorData(string tag)
-    {
-        return ActorsData[tag];
-    }
-
-    /// <summary>
-    /// Extend an actor from the scene, replacing it with a subclass of Actor given in parameter.
-    /// It will copy the Actor base class properties to the new one.
-    /// </summary>
-    /// <param name="actor"></param>
-    /// <param name="id"></param> actor id
-    /// <typeparam name="T"></typeparam>
-    public void OverwriteActor<T>(T actor, int id)
-        where T : Actor, new()
-    {
-        actor.TemplateActor(Actors[id]);
-        Actors[id] = actor;
     }
 
     public IEnumerable<Actor> FindActorsByTag(string tag)
@@ -52,9 +38,19 @@ public class ActorManager
     {
         return Actors.Values.First(actor => actor.Id == actorId);
     }
-    
+
     public IEnumerable<Actor> GetActors()
     {
         return Actors.Values;
+    }
+
+    public void RemoveActor(Actor actor)
+    {
+        Actors.Remove(actor.Id);
+    }
+
+    public ActorData FindTemplate(string tag)
+    {
+        return ActorsData[tag];
     }
 }

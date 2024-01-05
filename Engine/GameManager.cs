@@ -11,7 +11,7 @@ namespace Kalasrapier.Engine;
 public class GameManager
 {
     private GameWindow? _window;
-    private World? _world;
+    private Director? _world;
     private ImGuiController? _imGuiController;
 
     public GameManager()
@@ -19,8 +19,7 @@ public class GameManager
         BuildWindow();
         if (_window != null)
         {
-            _world = new World(_window);
-            Base.SetDefaultsBaseWithNewWorld(_world);
+            _world = new Director(_window);
         }
     }
 
@@ -120,8 +119,8 @@ public class GameManager
     /// <summary>
     /// Thing to do before the world starts. Loading scenes, render pipelines, extended actors, etc.
     /// </summary>
-    /// <param name="world"></param>
-    protected virtual void Preload(World world)
+    /// <param name="director"></param>
+    protected virtual void Preload(Director director)
     {
     }
 }

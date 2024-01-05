@@ -1,18 +1,12 @@
 using Kalasrapier.Engine.Rendering.Actors;
 using Kalasrapier.Engine.Rendering.Components;
 using Kalasrapier.Engine.Rendering.Services;
+using Kalasrapier.Engine.Rendering.Services.MeshManager;
 
 namespace Kalasrapier.Engine.Rendering;
 
-public class RenderPipeline : Base
+public class RenderPipeline
 {
-    // For our initial approach we only have 64 possible pipelines actives
-    // TODO: Future use?
-    public ulong Id { get; set; } = 0;
-
-    // tag to indentify the RenderPipeline in json format
-    public virtual string Tag => "NO_PIPELINE";
-
     protected Shader Shader;
 
     // By default we don't even request any vertex info data
@@ -23,18 +17,17 @@ public class RenderPipeline : Base
         Shader = shader;
     }
 
-    public bool BelongsToPipeline(Actor actor)
+    public virtual bool BelongsToPipeline(Actor actor)
     {
-        var renderer = actor.GetComponent<Renderer>();
-        return renderer != null && (renderer.RenderPipeline & Id) != 0;
+        return false;
     }
 
     // Given the list of actors subscribed to the pipeline, generated the assets for later usage.
-    public virtual void Setup(IEnumerable<Actor> actors)
+    public virtual void Setup(IEnumerable<Actor> actors, Director director)
     {
     }
 
-    public virtual void Render(IEnumerable<Actor> actors)
+    public virtual void Render(IEnumerable<Actor> actors, Director director)
     {
     }
 }

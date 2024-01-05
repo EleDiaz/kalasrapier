@@ -6,11 +6,11 @@ namespace Kalasrapier.Game;
 
 public class MyGameManager : GameManager
 {
-    protected override void Preload(World world)
+    protected override void Preload(Director director)
     {
-        world.AddRenderPipeline(new DefaultPipeline());
-        world.LoadScene("Scenes/simple.json");
-        ActorManager.OverwriteActor<Pawn>("pawn_0");
+        director.AddRenderPipeline(new DefaultPipeline());
+        director.LoadScene("Scenes/simple.json");
+        director.ActorManager.AddActor(new Pawn(director));
     }
 
 

@@ -1,4 +1,7 @@
 using Kalasrapier.Engine.Rendering;
+using Kalasrapier.Engine.Rendering.Actors;
+using Kalasrapier.Engine.Rendering.Components;
+using Kalasrapier.Engine.Rendering.Services;
 using OpenTK.Mathematics;
 
 namespace Kalasrapier.Game
@@ -12,30 +15,32 @@ namespace Kalasrapier.Game
 
         private float Speed { get; set; }
 
+        public Pawn(Director director) : base(director)
+        {
+        }
 
         public override void Start()
         {
-            _camera = ActorManager.GetMainCamera();
+            var pawnData = Director.ActorManager.FindTemplate("pawn");
+            ImportTemplate(pawnData);
+
+            _camera = Director.Cameras.ActiveCamera;
             _controller = new Controller();
             Speed = 1f;
             Enabled = true;
-            MeshId = "pawn";
-            Tag = "pawn";
-
-            ActorManager.FindActorsByTag("");
         }
 
         public override void Update(double deltaTime)
         {
-            _controller!.UpdateState(World.Window);
+            _controller!.UpdateState(Director.Window);
 
             var movement = _controller.GetMovement() * Speed * (float)deltaTime;
             var angles = _controller.GetArmDirection();
-            
+
             var rotation = Matrix4.CreateRotationX(angles.X) * Matrix4.CreateRotationY(angles.Y);
             Transform *= rotation * Matrix4.CreateTranslation(movement * Speed * (float)deltaTime);
 
-            _camera!.Transform = Matrix4.CreateTranslation(_cameraDistance, 0, 0) * rotation;
+            _camera!.Actor.Transform = Matrix4.CreateTranslation(_cameraDistance, 0, 0) * rotation;
         }
     }
 }

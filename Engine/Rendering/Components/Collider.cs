@@ -4,7 +4,12 @@ using OpenTK.Mathematics;
 
 namespace Kalasrapier.Engine.Rendering.Components;
 
-public class Collider : Component;
+public class Collider : Component
+{
+    public Collider(Actor actor) : base(actor)
+    {
+    }
+}
 
 public record AabbBoundingBox(Vector3 Min = new(), Vector3 Max = new())
 {
@@ -26,26 +31,46 @@ public record AabbBoundingBox(Vector3 Min = new(), Vector3 Max = new())
 public class BoxColliderData : ComponentData
 {
     public bool AutoGenerate = true;
-    public Vector3? Scale { get; set; }
-    public Vector3? Translate { get; set; }
+    public Vector3? Min { get; set; }
+    public Vector3? Max { get; set; }
     
-    public override Component BuildComponent()
+    public override Component BuildComponent(Actor actor)
     {
         if (AutoGenerate)
         {
-            var boxCollider = new BoxCollider();
+            var boxCollider = new BoxCollider(actor);
             boxCollider.Recalculate();
+            return boxCollider;
         }
         else
         {
-            BoundingBox = new AabbBoundingBox(initData.Translate!.Value, initData.Scale!.Value);
+            return new BoxCollider(actor, new AabbBoundingBox(Max!.Value, Min!.Value));
         }
     }
 }
 
 public class BoxCollider : Collider
 {
-    public AabbBoundingBox BoundingBox { get; private set; } = new();
+    public AabbBoundingBox BoundingBox { get; private set; }
+
+    public BoxCollider(Actor actor): base(actor)
+    {
+        BoundingBox = new AabbBoundingBox();
+        Recalculate();
+    }
+
+    public BoxCollider(Actor actor, AabbBoundingBox aabbBoundingBox) : base(actor)
+    {
+        BoundingBox = aabbBoundingBox;
+    }
+    
+    // Used to generalize the collider type
+    // This could mess up some things a little bit
+    // TODO: Review
+    public new Type GetType()
+    {
+        return typeof(Collider);
+    }
 
     /// <summary>
     /// This should be needed when we apply rotations to the Actor. Due to a limitation of aabb implementation.
@@ -96,6 +121,20 @@ public class SphereColliderData : ComponentData
     public bool AutoGenerate = true;
     public float? Radius { get; set; }
     public Vector3? Center { get; set; }
+    
+    public override Component BuildComponent(Actor actor)
+    {
+        if (AutoGenerate)
+        {
+            var sphereCollider = new SphereCollider(actor);
+            sphereCollider.Recalculate();
+            return sphereCollider;
+        }
+        else
+        {
+            return new SphereCollider(actor, Radius!.Value, Center!.Value);
+        }
+    }
 }
 
 public class SphereCollider : Collider
@@ -115,6 +154,11 @@ public class SphereCollider : Collider
         Center = center;
     }
 
+    public new Type GetType()
+    {
+        return typeof(Collider);
+    }
+    
     public void Recalculate()
     {
         // Generate a default sphere
@@ -127,22 +171,6 @@ public class SphereCollider : Collider
         var vertexList = mesh.GetVertexList();
         Center = PointCollider.GetMean(vertexList);
         Radius = GetMaxDistanceFromPoint(Center, vertexList);
-    }
-
-    public override void Init(ComponentData componentData)
-    {
-        base.Init(componentData);
-        var initData = componentData as SphereColliderData ??
-                       throw new Exception("Invalid component data expected: " + nameof(SphereColliderData));
-        if (initData.AutoGenerate)
-        {
-            Recalculate();
-        }
-        else
-        {
-            Radius = initData.Radius!.Value;
-            Center = initData.Center!.Value;
-        }
     }
 
     private static float GetMaxDistanceFromPoint(Vector3 center, List<Vector3> vertices)
@@ -160,15 +188,44 @@ public class PointColliderData : ComponentData
 {
     public bool AutoGenerate = true;
     public Vector3? Point { get; set; }
+    
+    public override Component BuildComponent(Actor actor)
+    {
+        if (AutoGenerate)
+        {
+            var pointCollider = new PointCollider(actor);
+            pointCollider.Recalculate();
+            return pointCollider;
+        }
+        else
+        {
+            return new PointCollider(actor, Point!.Value);
+        }
+    }
 }
 
 public class PointCollider : Collider
 {
     public Vector3 Point { get; set; }
+    
+    public PointCollider(Actor actor) : base(actor)
+    {
+        Recalculate();
+    }
+    
+    public PointCollider(Actor actor, Vector3 point) : base(actor)
+    {
+        Point = point;
+    }
 
+    public new Type GetType()
+    {
+        return typeof(Collider);
+    }
+    
     public void Recalculate()
     {
-        var mesh = Actor?.GetComponent<Mesh>();
+        var mesh = Actor.GetComponent<Mesh>();
         if (mesh is null)
         {
             return; // TODO:
@@ -177,28 +234,8 @@ public class PointCollider : Collider
         Point = GetMean(mesh.GetVertexList());
     }
 
-    public PointCollider(Actor actor, Vector3 point) : base(actor)
-    {
-        Point = point;
-    }
-
     public static Vector3 GetMean(List<Vector3> vertexList)
     {
         return vertexList.Aggregate(Vector3.Zero, (current, v) => current + v) / vertexList.Count;
-    }
-
-    public override void Init(ComponentData componentData)
-    {
-        base.Init(componentData);
-        var initData = componentData as PointColliderData ??
-                       throw new Exception("Invalid component data expected: " + nameof(PointColliderData));
-        if (initData.AutoGenerate)
-        {
-            Recalculate();
-        }
-        else
-        {
-            Point = initData.Point!.Value;
-        }
     }
 }
