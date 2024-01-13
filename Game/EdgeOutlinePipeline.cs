@@ -42,7 +42,7 @@ public class EdgeOutlinePipeline : RenderPipeline
             actor.AddComponent(renderer);
             var mesh = actor.GetComponent<Mesh>();
             mesh.GetIndexArray(out indices);
-            mesh.GetVertexArray(out vertices, VertexInfo);
+            mesh.GetVertexDataPerTriangle(out vertices, VertexInfo);
             renderer.LoadMeshDSA(ref vertices, ref indices, VertexInfo);
         }
     }

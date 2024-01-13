@@ -75,93 +75,133 @@ public record MeshData
         }
     }
 
-
-    public void GetVertexArray(out float[] vertexData, VertexInfo info)
+    // IMPORTANT: This always get sorted by VertexInfo enum definition.
+    public void GetVertexDataPerVertex(out float[] vertexData, VertexInfo info)
     {
-        // We can't directly use the vertex length when we work with UVs. Due, that each UV is linked to a vertex
-        // inside a triangle primitive and those primitive could have those vertices 0 or more times shared with others.
-        // Also, one would be encouraged to think that the UV points would match the index points. But it is false
-        // depending on the representation of those index points. We will be using one where the indexes aren't
-        // reuse between triangles. So, our UVs will always be double size of our index buffer.
-        //
-        // The code is implemented to allow the case where the vertices, normals, colors... are associate to the
-        // each polygon primitive.
-
-        var getSize = (VertexInfo info) => {
-            return UvData?.Length / 2 * info.ComponentSize();
-        };
-
-        var verticesLength = getSize(VertexInfo.VERTICES) ?? VertexData.Length;
-        // Normals are associate to a vertex 1-1. This could change be to achieve a Flat Shading where each triangle
-        // would share the face normal.
-        var normalLength = getSize(VertexInfo.NORMALS) ?? NormalData?.Length ?? 0;
-        // Colors are associate to a vertex 1-1.
-        var colorsLength = getSize(VertexInfo.COLORS) ?? ColorData?.Length ?? 0;
-        // Weights are associate to a vertex 1-1.
-        var weightsLength = getSize(VertexInfo.COLORS) ?? WeightData?.Length ?? 0;
-
-        var uvLength = UvData?.Length ?? 0;
-
-        var size = verticesLength + normalLength + colorsLength + weightsLength + uvLength;
-
-        var strideSize = info.StrideSize();
-            
-        var getOffset = (int currentOffset, VertexInfo component) => {
-            return currentOffset + (info.HasFlag(component) ? component.ComponentSize() : 0);
-        };
-
-        vertexData = new float[size];
-        int vI = 0;
-        var vertexOffset = getOffset(0, VertexInfo.VERTICES);
-        int cI = 0;
-        var colorOffset = getOffset(vertexOffset, VertexInfo.COLORS);
-        int uvI = 0;
-        var uvOffset = getOffset(colorOffset, VertexInfo.UV);
-        int nI = 0;
-        var normalOffset = getOffset(uvOffset, VertexInfo.NORMALS);
-        int wI = 0;
-        var weightsOffset = getOffset(normalOffset, VertexInfo.WEIGHTS);
-
-
-        var fillValuesWithIndices = (ref float[] vertexData, ref int ix, ref int index, float[] array, VertexInfo component) => {
-            // When UV is active the index will be associate to Index the indices.
-            if (info.HasFlag(VertexInfo.UV))
-            {
-                for (int j = 0; j < component.ComponentSize(); j++)
-                {
-                    vertexData[ix++] = array[3 * IndexData![index] + j];
-                }
-                ix--;
-            }
-            else
-            {
-                vertexData[ix] = array[index];
-            }
-            index++;
-        };
-
-        for (int i = 0; i < vertexData.Length; i++)
+        if (info.HasFlag(VertexInfo.UV))
         {
-            if (i % strideSize < vertexOffset)
+            throw new Exception("Can not get vertex data per vertex when UV is active");
+        }
+
+        vertexData = new float[info.StrideSize() * (VertexData.Length / 3)];
+        var offset = 0;
+        
+        if (info.HasFlag(VertexInfo.VERTICES))
+        {
+            fillData(ref vertexData, VertexData, offset, info.StrideSize(), VertexInfo.VERTICES.ComponentSize());
+            offset += VertexInfo.VERTICES.ComponentSize();
+        }
+        if (info.HasFlag(VertexInfo.COLORS))
+        {
+            if (ColorData is null)
             {
-                fillValuesWithIndices(ref vertexData, ref i, ref vI, VertexData, VertexInfo.VERTICES);
+                throw new Exception("Can not get vertex data per vertex when Color is not active");
             }
-            else if (i % strideSize < colorOffset)
+            fillData(ref vertexData, ColorData, offset, info.StrideSize(), VertexInfo.COLORS.ComponentSize());
+            offset += VertexInfo.COLORS.ComponentSize();
+        }
+        if (info.HasFlag(VertexInfo.NORMALS))
+        {
+            if (NormalData is null)
             {
-                fillValuesWithIndices(ref vertexData, ref i, ref cI, ColorData!, VertexInfo.COLORS);
+                throw new Exception("Can not get vertex data per vertex when Normal is not active");
             }
-            else if (i % strideSize < uvOffset)
+            fillData(ref vertexData, NormalData, offset, info.StrideSize(), VertexInfo.NORMALS.ComponentSize());
+            offset += VertexInfo.NORMALS.ComponentSize();
+        }
+        if (info.HasFlag(VertexInfo.WEIGHTS))
+        {
+            if (WeightData is null)
             {
-                vertexData[i] = UvData![uvI];
-                uvI++;
+                throw new Exception("Can not get vertex data per vertex when Weight is not active");
             }
-            else if (i % strideSize < normalOffset)
+            fillData(ref vertexData, WeightData, offset, info.StrideSize(), VertexInfo.WEIGHTS.ComponentSize());
+        }
+    }
+
+    public void fillData(ref float[] data, float[] subData, int offset, int stride, int componentSize)
+    {
+        for (int i = 0; i < subData.Length / componentSize; i++)
+        {
+            for (int j = 0; j < componentSize; j++)
             {
-                fillValuesWithIndices(ref vertexData, ref i, ref nI, NormalData!, VertexInfo.NORMALS);
+                data[offset + stride * i + j] = subData[i * componentSize + j];
             }
-            else if (i % strideSize < weightsOffset)
+        }
+    }
+
+    // We only consider index data as triangle list. So, to get the number of triangles would be IndexData.Length / 3
+    // Or the number of rows in the vertex data would be IndexData.Length
+    // IMPORTANT: This always get sorted by VertexInfo enum definition.
+    public void GetVertexDataPerTriangle(out float[] vertexData, VertexInfo info)
+    {
+        if (IndexData is null)
+        {
+            throw new Exception("Can not get vertex data per triangle when Index is not active");   
+        }
+        vertexData = new float[info.StrideSize() * IndexData.Length];
+        var offset = 0;
+        
+        if (info.HasFlag(VertexInfo.VERTICES))
+        {
+            fillDataPerTriangle(ref vertexData, VertexData, offset, info.StrideSize(), VertexInfo.VERTICES.ComponentSize());
+            offset += VertexInfo.VERTICES.ComponentSize();
+        }
+        
+        if (info.HasFlag(VertexInfo.COLORS))
+        {
+            if (ColorData is null)
             {
-                fillValuesWithIndices(ref vertexData, ref i, ref wI, WeightData!, VertexInfo.WEIGHTS);
+                throw new Exception("Can not get vertex data per triangle when Color is not active");
+            }
+            fillDataPerTriangle(ref vertexData, ColorData, offset, info.StrideSize(), VertexInfo.COLORS.ComponentSize());
+            offset += VertexInfo.COLORS.ComponentSize();
+        }
+
+        if (info.HasFlag(VertexInfo.UV))
+        {
+            if (UvData is null)
+            {
+                throw new Exception("Can not get vertex data per triangle when UV is not active");
+            }
+            for (int i = 0; i < UvData!.Length / 2; i++)
+            {
+                for (int j = 0; j < 2; j++)
+                {
+                    vertexData[offset + info.StrideSize() * i + j] = UvData[i * 2 + j];
+                }
+            }
+            offset += VertexInfo.UV.ComponentSize();
+        }
+        
+        if (info.HasFlag(VertexInfo.NORMALS))
+        {
+            if (NormalData is null)
+            {
+                throw new Exception("Can not get vertex data per triangle when Normal is not active");
+            }
+            fillDataPerTriangle(ref vertexData, NormalData, offset, info.StrideSize(), VertexInfo.NORMALS.ComponentSize());
+            offset += VertexInfo.NORMALS.ComponentSize();
+        }
+        
+        if (info.HasFlag(VertexInfo.WEIGHTS))
+        {
+            if (WeightData is null)
+            {
+                throw new Exception("Can not get vertex data per triangle when Weight is not active");
+            }
+            fillDataPerTriangle(ref vertexData, WeightData, offset, info.StrideSize(), VertexInfo.WEIGHTS.ComponentSize());
+        }
+        
+    }
+
+    private void fillDataPerTriangle(ref float[] data, float[] subData, int offset, int stride, int componentSize)
+    {
+        for (int i = 0; i < IndexData!.Length; i++)
+        {
+            for (int j = 0; j < componentSize; j++)
+            {
+                data[offset + stride * i + j] = subData[IndexData[i] * componentSize + j];
             }
         }
     }
@@ -201,7 +241,7 @@ public record SceneJson
     [JsonPropertyName("meshes")] public required MeshMetaData[] Meshes { get; init; }
     [JsonPropertyName("textures")] public required TextureData[] Textures { get; init; }
     
-    [JsonPropertyName("materials")] public required MaterialData[] Materials { get; init; }
+    [JsonPropertyName("materials")] public required Dictionary<string, SlotMaterialData[]> Materials { get; init; }
     [JsonPropertyName("actors")] public required ActorData[] Actors { get; init; }
 }
 

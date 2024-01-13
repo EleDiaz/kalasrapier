@@ -140,7 +140,7 @@ public class Shader
     /// <param name="data">The data to set</param>
     public void SetInt(string name, int data)
     {
-        GL.UseProgram(Handle);
+        // GL.UseProgram(Handle);
         GL.Uniform1(_uniformLocations[name], data);
     }
 
@@ -151,7 +151,7 @@ public class Shader
     /// <param name="data">The data to set</param>
     public void SetFloat(string name, float data)
     {
-        GL.UseProgram(Handle);
+        // GL.UseProgram(Handle);
         GL.Uniform1(_uniformLocations[name], data);
     }
 
@@ -167,7 +167,7 @@ public class Shader
     /// </remarks>
     public void SetMatrix4(string name, Matrix4 data)
     {
-        GL.UseProgram(Handle);
+        // GL.UseProgram(Handle);
         GL.UniformMatrix4(_uniformLocations[name], true, ref data);
     }
 
@@ -178,7 +178,7 @@ public class Shader
     /// <param name="data">The data to set</param>
     public void SetVector3(string name, Vector3 data)
     {
-        GL.UseProgram(Handle);
+        // GL.UseProgram(Handle);
         GL.Uniform3(_uniformLocations[name], data);
     }
 }

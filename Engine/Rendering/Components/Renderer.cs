@@ -46,12 +46,12 @@ public class RendererMesh : Component
     /// <summary>
     /// Load the mesh through the DSA extension. https://www.khronos.org/opengl/wiki/Direct_State_Access
     /// This Operation will overwrite the mesh with new data.
+    /// IMPORTANT: This always get sorted by VertexInfo enum definition.
     /// </summary>
     public void LoadMeshDSA(ref float[] vertexArray, ref uint[] indexArray, VertexInfo info)
     {
-
         GL.CreateBuffers(1, out Vbo);
-        Utils.LabelObject(ObjectLabelIdentifier.Buffer, Vbo, "VBO ");
+        Utils.LabelObject(ObjectLabelIdentifier.Buffer, Vbo, "VBO " + _meshId);
         // NOTE: glBufferData vs glBufferStorage, the last one specify that the memory size requested wont change on
         // size, in case of changing it again with glBufferStorage, will produce an error.
         // The later also allows to better performance. You can still modify the mapped memory via glSubBufferData*
@@ -68,7 +68,7 @@ public class RendererMesh : Component
         // vao, binding index, buffer bind, offset, stride
         // You can bind several vbo to a vao through bindingIndex and bufferHandler
         // TODO
-        Utils.LabelObject(ObjectLabelIdentifier.Buffer, Vao, "VAO " + _meshId);
+        Utils.LabelObject(ObjectLabelIdentifier.VertexArray, Vao, "VAO " + _meshId);
         GL.VertexArrayVertexBuffer(Vao, 0, Vbo, 0, info.StrideOffset());
         Utils.CheckGlError("Failed to VAO " + _meshId);
 
@@ -85,7 +85,7 @@ public class RendererMesh : Component
         // https://docs.gl/gl4/glVertexAttribFormat
         // vao, attrib location, length of compounds, type, normalized integer, relative offset
         // Vertices
-        GL.VertexArrayAttribFormat(Vao, attributeICounter, VertexInfo.VERTICES.StrideSize(),
+        GL.VertexArrayAttribFormat(Vao, attributeICounter, VertexInfo.VERTICES.ComponentSize(),
             VertexAttribType.Float, false, 0);
 
         // https://docs.gl/gl4/glVertexAttribBinding
@@ -93,11 +93,12 @@ public class RendererMesh : Component
         // This allows to connect the attribute index to the binding index, which could be the same VBO or another
         // appart defined in GL.VertexArrayVertexBuffer
         GL.VertexArrayAttribBinding(Vao, attributeICounter, 0);
+        attributeICounter++;
 
         if (info.HasFlag(VertexInfo.COLORS))
         {
             GL.EnableVertexArrayAttrib(Vao, attributeICounter);
-            GL.VertexArrayAttribFormat(Vao, attributeICounter, VertexInfo.COLORS.StrideSize(),
+            GL.VertexArrayAttribFormat(Vao, attributeICounter, VertexInfo.COLORS.ComponentSize(),
                 VertexAttribType.Float, false, offsetHelper.StrideOffset());
             GL.VertexArrayAttribBinding(Vao, attributeICounter, 0);
             offsetHelper |= VertexInfo.COLORS;
@@ -107,7 +108,7 @@ public class RendererMesh : Component
         if (info.HasFlag(VertexInfo.UV))
         {
             GL.EnableVertexArrayAttrib(Vao, attributeICounter);
-            GL.VertexArrayAttribFormat(Vao, attributeICounter, VertexInfo.UV.StrideSize(),
+            GL.VertexArrayAttribFormat(Vao, attributeICounter, VertexInfo.UV.ComponentSize(),
                 VertexAttribType.Float, false, offsetHelper.StrideOffset());
             GL.VertexArrayAttribBinding(Vao, attributeICounter, 0);
             offsetHelper |= VertexInfo.UV;
@@ -117,7 +118,7 @@ public class RendererMesh : Component
         if (info.HasFlag(VertexInfo.NORMALS))
         {
             GL.EnableVertexArrayAttrib(Vao, attributeICounter);
-            GL.VertexArrayAttribFormat(Vao, attributeICounter, VertexInfo.NORMALS.StrideSize(),
+            GL.VertexArrayAttribFormat(Vao, attributeICounter, VertexInfo.NORMALS.ComponentSize(),
                 VertexAttribType.Float, false, offsetHelper.StrideOffset());
             GL.VertexArrayAttribBinding(Vao, attributeICounter, 0);
             offsetHelper |= VertexInfo.NORMALS;
@@ -127,7 +128,7 @@ public class RendererMesh : Component
         if (info.HasFlag(VertexInfo.WEIGHTS))
         {
             GL.EnableVertexArrayAttrib(Vao, attributeICounter);
-            GL.VertexArrayAttribFormat(Vao, attributeICounter, VertexInfo.WEIGHTS.StrideSize(),
+            GL.VertexArrayAttribFormat(Vao, attributeICounter, VertexInfo.WEIGHTS.ComponentSize(),
                 VertexAttribType.Float, false, offsetHelper.StrideOffset());
             GL.VertexArrayAttribBinding(Vao, attributeICounter, 0);
             // offsetHelper |= VertexInfo.WEIGHTS;

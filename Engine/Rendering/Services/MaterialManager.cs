@@ -7,8 +7,19 @@ namespace Kalasrapier.Engine.Rendering.Services;
 /// </summary>
 public class MaterialManager
 {
+    private Dictionary<string, MaterialData> _materialDatas = new();
     private Dictionary<string, string> _paths = new();
     private Dictionary<string, Texture> _textures = new();
+    
+    public void AddMaterial(string id, MaterialData materialData)
+    {
+        _materialDatas.Add(id, materialData);
+    }
+    
+    public MaterialData GetMaterial(string id)
+    {
+        return _materialDatas[id];
+    }
         
     /// <summary>
     /// Add a texture to the manager, *doesn't* load it to the GPU.

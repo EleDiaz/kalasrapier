@@ -43,15 +43,21 @@ public class DefaultPipeline : RenderPipeline
         foreach (var actor in actors)
         {
             var mesh = actor.GetComponent<Mesh>();
+            if (mesh is null) {
+                Console.WriteLine("Actor: " + actor.Tag + " has no mesh");
+                continue;
+            }
             var defaultRenderer = new DefaultRenderer(actor);
             
             if (mesh is null) {
                 continue;
             }
-            mesh.GetVertexArray(out vertices, VertexInfo);
+            mesh.GetVertexDataPerTriangle(out vertices, VertexInfo);
             // This isnt necessary for this case indeed it has a penalty and no pro
             mesh.GetIndexArray(out indices);
             defaultRenderer.LoadMeshDSA(ref vertices, ref indices, VertexInfo);
+            defaultRenderer.IndicesLenght = indices.Length;
+            defaultRenderer.Slots = mesh?.MeshData?.IndexSlots?.ToArray();
             actor.AddComponent(defaultRenderer);
         }
 
@@ -72,9 +78,11 @@ public class DefaultPipeline : RenderPipeline
         Shader.SetMatrix4("view", camera.GetViewMatrix());
         Shader.SetMatrix4("projection", camera.GetProjectionMatrix());
 
+        /*
         Shader.SetVector3("light_direction", _directionalLight.Direction);
         Shader.SetVector3("light_color", _directionalLight.Color);
         Shader.SetFloat("light_intensity", _directionalLight.Intensity);
+        */
 
         foreach (var actor in actors)
         {
@@ -89,7 +97,7 @@ public class DefaultPipeline : RenderPipeline
             renderer.SetActiveMesh();
             Shader.SetMatrix4("model", actor.GetWorldTransform());
 
-            Shader.SetVector3("diffuse", _defaultColor);
+            Shader.SetVector3("diffuse_color", _defaultColor);
 
             var materialsAmount = Math.Min(material.Slots.Count, renderer.Slots?.Length ?? 0);
             
@@ -98,7 +106,7 @@ public class DefaultPipeline : RenderPipeline
                 var indexSlot = renderer!.Slots![i];
                 var materialSlot = material.Slots[i];
                 materialSlot.BaseTexture?.Use(TextureUnit.Texture0);
-                Shader.SetVector3("diffuse", materialSlot.DiffuseColor);
+                Shader.SetVector3("diffuse_color", materialSlot.DiffuseColor);
                 GL.DrawArrays(PrimitiveType.Triangles, (int)indexSlot.Start, (int)indexSlot.Offset);
             }
 

@@ -5,11 +5,10 @@ using OpenTK.Mathematics;
 
 namespace Kalasrapier.Engine.Rendering.Components;
 
-[JsonDerivedType(typeof(MaterialData), typeDiscriminator: "Material")]
-public class MaterialData: ComponentData
+public class MaterialRef: ComponentData
 {
+    [JsonPropertyName("material_id")]
     public string Name { get; set; } = "";
-    public List<SlotData> Slots { get; set; } = new();
 
     public override Component BuildComponent(Actor actor)
     {
@@ -17,9 +16,16 @@ public class MaterialData: ComponentData
     }
 }
 
-public class SlotData
+public record MaterialData
 {
-    public Vector3? DiffuseColor { get; set; }
+    public List<SlotMaterialData> Slots { get; set; } = new();
+}
+
+public class SlotMaterialData
+{
+    [JsonPropertyName("diffuse")]
+    public float[]? DiffuseColor { get; set; }
+    [JsonPropertyName("base_texture")]
     public string? BaseTexture { get; set; }
 }
 
@@ -34,25 +40,23 @@ public class Material : Component
     public List<SlotMaterial> Slots = new();
     private MaterialManager _materialManager { get; }
 
-    public Material(Actor actor, MaterialData materialData): base(actor)
+    public Material(Actor actor, MaterialRef materialRef): base(actor)
     {
         _materialManager = actor.Director.MaterialManager;
-        materialData.Slots.ForEach(slotData =>
+        _materialManager.GetMaterial(materialRef.Name).Slots.ForEach(slotData =>
         {
             var slotMaterial = new SlotMaterial();
             if (slotData.DiffuseColor is not null)
             {
-                slotMaterial.DiffuseColor = slotData.DiffuseColor.Value;
+                var color = slotData.DiffuseColor;
+                slotMaterial.DiffuseColor = new Vector3(color[0], color[1], color[2]);
             }
 
             if (slotData.BaseTexture is not null)
             {
-                _materialManager.LoadTexture(slotData.BaseTexture);
                 slotMaterial.BaseTexture = _materialManager.GetTexture(slotData.BaseTexture);
             }
             Slots.Add(slotMaterial);
         });
     }
-    
-    
 }

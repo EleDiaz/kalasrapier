@@ -27,7 +27,6 @@ public record AabbBoundingBox(Vector3 Min = new(), Vector3 Max = new())
     }
 }
 
-[JsonDerivedType(typeof(BoxColliderData), typeDiscriminator: "BoxCollider")]
 public class BoxColliderData : ComponentData
 {
     public bool AutoGenerate = true;
@@ -115,7 +114,6 @@ public class BoxCollider : Collider
     }
 }
 
-[JsonDerivedType(typeof(SphereColliderData), typeDiscriminator: "SphereCollider")]
 public class SphereColliderData : ComponentData
 {
     public bool AutoGenerate = true;
@@ -183,7 +181,6 @@ public class SphereCollider : Collider
     }
 }
 
-[JsonDerivedType(typeof(PointColliderData), typeDiscriminator: "PointCollider")]
 public class PointColliderData : ComponentData
 {
     public bool AutoGenerate = true;

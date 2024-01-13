@@ -37,6 +37,19 @@ public class Director
             throw new Exception("Scene is null");
         }
 
+        // Texture Load
+        foreach (var texture in sceneJson.Textures)
+        {
+            MaterialManager.AddTexture(texture.Id, texture.Path);
+        }
+
+        foreach (var materialData in sceneJson.Materials)
+        {
+            var material = new MaterialData {Slots = materialData.Value.ToList() }; 
+            Console.WriteLine("Material: " + materialData.Key);
+            MaterialManager.AddMaterial(materialData.Key, material);
+        }
+
         // Mesh Load
         foreach (var mesh in sceneJson.Meshes)
         {
@@ -44,19 +57,16 @@ public class Director
         }
 
         // Actor Load
-        foreach (var actor in sceneJson.Actors)
+        foreach (var actorData in sceneJson.Actors)
         {
-            var instancedActor = ActorManager.AddActor(new Actor(this));
-            foreach (var componentData in actor.Components)
+            var actor = new Actor(this);
+            actor.ImportTemplate(actorData);
+            var instancedActor = ActorManager.AddActor(actor);
+            foreach (var componentData in actorData.Components)
             {
+                Console.WriteLine("Component: " + componentData.GetType());
                 instancedActor.AddComponent(componentData.BuildComponent(instancedActor));
             }
-        }
-
-        // Texture Load
-        foreach (var texture in sceneJson.Textures)
-        {
-            MaterialManager.AddTexture(texture.Id, texture.Path);
         }
     }
 
@@ -70,9 +80,7 @@ public class Director
         // Pre-init all actors that belong to a render pipeline even those disabled
         foreach (var renderPipeline in _renderPipelines)
         {
-            renderPipeline.Setup(
-                    ActorManager.GetActors()
-                        .Where(actor => renderPipeline.BelongsToPipeline(actor)), this);
+            renderPipeline.Setup(ActorManager.GetActors(), this);
         }
 
         foreach (var actor in ActorManager.GetActors().Where(actor => actor.Enabled))

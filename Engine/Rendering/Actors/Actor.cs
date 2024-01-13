@@ -119,7 +119,13 @@ public class Actor
     
     public T? GetComponent<T>() where T: Component
     {
-        return Components[typeof(T).BaseType ?? typeof(T)] as T;
+        // TODO: Review this later
+        if (Components.TryGetValue(typeof(T), out var component)) {
+            return component as T;
+        }
+        else {
+            return null;
+        }
     }
     
     // This implies a lot of problems with the initialization.

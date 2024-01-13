@@ -3,6 +3,15 @@ using OpenTK.Mathematics;
 
 namespace Kalasrapier.Engine.Rendering.Components;
 
+public class CameraData : ComponentData
+{
+    public override Component BuildComponent(Actor actor)
+    {
+        return new Camera(actor);
+    }
+}
+
+
 public class Camera : Component
 {
     // The field of view of the camera (radians)

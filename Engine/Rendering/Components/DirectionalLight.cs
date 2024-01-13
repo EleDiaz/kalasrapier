@@ -4,7 +4,6 @@ using OpenTK.Mathematics;
 
 namespace Kalasrapier.Engine.Rendering.Components;
 
-[JsonDerivedType(typeof(DirectionalLightData), typeDiscriminator: "DirectionalLight")]
 public class DirectionalLightData : ComponentData
 {
     public Vector3? Direction { get; set; }
