@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <None Include="Shaders/**" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Textures/**" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Meshes/**" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Scenes/**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

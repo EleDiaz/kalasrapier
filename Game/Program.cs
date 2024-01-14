@@ -9,7 +9,7 @@ public class MyGameManager : GameManager
     {
         director.AddRenderPipeline(new DefaultPipeline());
         director.LoadScene("Scenes/simple.json");
-        // director.ActorManager.AddActor(new Pawn(director));
+        director.ActorManager.AddActor(new Pawn(director));
     }
 
 

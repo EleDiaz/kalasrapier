@@ -56,17 +56,18 @@ public class Director
             MeshManager.AddMeshResource(mesh.File, mesh.Id);
         }
 
+        // Actor Templates
+        foreach (var actorData in sceneJson.Templates)
+        {
+            ActorManager.LoadActorData(actorData);
+        }
+
         // Actor Load
         foreach (var actorData in sceneJson.Actors)
         {
             var actor = new Actor(this);
             actor.ImportTemplate(actorData);
-            var instancedActor = ActorManager.AddActor(actor);
-            foreach (var componentData in actorData.Components)
-            {
-                Console.WriteLine("Component: " + componentData.GetType());
-                instancedActor.AddComponent(componentData.BuildComponent(instancedActor));
-            }
+            ActorManager.AddActor(actor);
         }
     }
 

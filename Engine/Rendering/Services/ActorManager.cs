@@ -21,6 +21,11 @@ public class ActorManager
         ActorsData.Add(actorData.Tag, actorData);
     }
 
+    public ActorData FindTemplate(string tag)
+    {
+        return ActorsData[tag];
+    }
+
     public T AddActor<T>(T actor)
         where T : Actor
     {
@@ -47,10 +52,5 @@ public class ActorManager
     public void RemoveActor(Actor actor)
     {
         Actors.Remove(actor.Id);
-    }
-
-    public ActorData FindTemplate(string tag)
-    {
-        return ActorsData[tag];
     }
 }

@@ -54,6 +54,7 @@ public class Material : Component
 
             if (slotData.BaseTexture is not null)
             {
+                _materialManager.LoadTexture(slotData.BaseTexture);
                 slotMaterial.BaseTexture = _materialManager.GetTexture(slotData.BaseTexture);
             }
             Slots.Add(slotMaterial);

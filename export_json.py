@@ -72,7 +72,7 @@ def extract_mesh_data(obj):
             uvloop = uv_layer[loopindex]
             operate_uvs += [uvloop.uv[0], uvloop.uv[1]]
 
-    mesh_data["uvs"] = operate_uvs
+    mesh_data["uv_data"] = operate_uvs
     return mesh_data
 
 

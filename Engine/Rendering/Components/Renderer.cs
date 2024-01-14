@@ -30,10 +30,6 @@ public class RendererMesh : Component
     // Information relate to material slots
     public IndicesPerMaterialData[]? Slots;
 
-    // Default Materials applied to the mesh.
-    // TODO: remove
-    public Material[]? Materials;
-
     // for debugging
     private string _meshId { get; set; } = "";
 

@@ -18,7 +18,7 @@ public class DirectionalLightData : ComponentData
 
 public class DirectionalLight : Component
 {
-    public Vector3 Direction { get; set; } = new(0, 0, -1);
+    public Vector3 Direction { get; set; } = new(0, 1, 0);
     public Vector3 Color { get; set; } = new(1, 1, 1);
     public float Intensity { get; set; } = 1;
     

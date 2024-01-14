@@ -26,7 +26,7 @@ namespace Kalasrapier.Game
 
         public Controller()
         {
-            Speed = 1f;
+            Speed = 5f;
             MouseSensibility = 50f;
         }
 

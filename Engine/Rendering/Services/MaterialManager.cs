@@ -37,6 +37,10 @@ public class MaterialManager
     /// <param name="id"></param>
     public void LoadTexture(string id)
     {
+        if (_textures.ContainsKey(id))
+        {
+            return;
+        }
         _textures.Add(id, Texture.LoadFromFile(_paths[id]));
     }
 

@@ -243,6 +243,7 @@ public record SceneJson
     
     [JsonPropertyName("materials")] public required Dictionary<string, SlotMaterialData[]> Materials { get; init; }
     [JsonPropertyName("actors")] public required ActorData[] Actors { get; init; }
+    [JsonPropertyName("templates")] public required ActorData[] Templates { get; init; }
 }
 
 public record MeshMetaData
@@ -253,6 +254,6 @@ public record MeshMetaData
 
 public record TextureData
 {
-    [JsonPropertyName("path")] public required string Path { get; init; }
+    [JsonPropertyName("file")] public required string Path { get; init; }
     [JsonPropertyName("id")] public required string Id { get; init; }
 }

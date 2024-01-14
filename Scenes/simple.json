@@ -1,175 +1,195 @@
 {
-    "id": "scene_0",
-    "meshes": [
-        {
-            "file": "Meshes/monkey.json",
-            "id": "monkey"
-        },
-        {
-            "file": "Meshes/cube.json",
-            "id": "cube"
-        },
-        {
-            "file": "Meshes/pawn.json",
-            "id": "pawn"
-        }
-    ],
-    "materials": {
-        "pawn_material": [
-            {
-                "diffuse": [
-                    0,
-                    0,
-                    1
-                ]
-            },
-            {
-                "diffuse": [
-                    1,
-                    0,
-                    0
-                ]
-            },
-            {
-                "diffuse": [
-                    0,
-                    0,
-                    0
-                ]
-            },
-            {
-                "diffuse": [
-                    1,
-                    1,
-                    1
-                ]
-            }
-        ]
+  "id": "scene_0",
+  "meshes": [
+    {
+      "file": "Meshes/monkey.json",
+      "id": "monkey"
     },
-    "textures": [],
-    "actors": [
-        {
-            "tag": "DIRECTIONAL_LIGHT",
-            "enabled": true,
-            "position": [
-                0,
-                5,
-                0
-            ],
-            "orientation": {
-                "axis": [
-                    1,
-                    0,
-                    0
-                ],
-                "angle": -45
-            },
-            "components": [
-                {
-                    "$type": "DirectionalLight"
-                }
-            ]
-        },
-        {
-            "tag": "CAMERA",
-            "enabled": true,
-            "position": [
-                0,
-                0,
-                5
-            ],
-            "orientation": {
-                "axis": [
-                    1,
-                    0,
-                    0
-                ],
-                "angle": 0
-            },
-            "components": [
-                {
-                    "$type": "Camera"
-                }
-            ]
-        },
-        {
-            "tag": "pawn_0",
-            "enabled": true,
-            "scale": [
-                1,
-                1,
-                1
-            ],
-            "position": [
-                0,
-                0,
-                0
-            ],
-            "orientation": {
-                "axis": [
-                    1,
-                    0,
-                    0
-                ],
-                "angle": 0
-            },
-            "children": [],
-            "components": [
-                {
-                    "$type": "Mesh",
-                    "mesh_id": "pawn"
-                },
-                {
-                    "$type": "Material",
-                    "material_id": "pawn_material"
-                }
-            ]
-        },
-        {
-            "tag": "cube_1",
-            "enabled": true,
-            "scale": [
-                1,
-                1,
-                1
-            ],
-            "position": [
-                5,
-                0,
-                -5
-            ],
-            "orientation": {
-                "axis": [
-                    1,
-                    0,
-                    0
-                ],
-                "angle": 0
-            }
-        },
-        {
-            "tag": "monkey_0",
-            "mesh_id": "monkey",
-            "enabled": true,
-            "render_pipeline": "DEFAULT_PIPELINE",
-            "scale": [
-                1,
-                1,
-                1
-            ],
-            "position": [
-                -5,
-                0,
-                -5
-            ],
-            "orientation": {
-                "axis": [
-                    1,
-                    0,
-                    0
-                ],
-                "angle": 0
-            }
-        }
+    {
+      "file": "Meshes/cube.json",
+      "id": "cube"
+    },
+    {
+      "file": "Meshes/pawn.json",
+      "id": "pawn"
+    }
+  ],
+  "materials": {
+    "pawn_material": [
+      {
+        "diffuse": [0, 0, 1]
+      },
+      {
+        "diffuse": [1, 0, 0]
+      },
+      {
+        "diffuse": [0, 0, 0]
+      },
+      {
+        "diffuse": [1, 1, 1]
+      }
+    ],
+    "cube": [
+      {
+        "diffuse": [0, 0, 1]
+      }
+    ],
+    "floor": [
+      {
+        "base_texture": "floor_tex"
+      }
     ]
+  },
+  "textures": [
+    {
+      "file": "Textures/ceramic.png",
+      "id": "floor_tex"
+    },
+    {
+      "file": "Textures/pawn.png",
+      "id": "pawn"
+    },
+    {
+      "file": "Textures/ring.png",
+      "id": "ring"
+    }
+  ],
+  "templates": [
+    {
+      "tag": "pawn",
+      "enabled": true,
+      "scale": [1, 1, 1],
+      "position": [1, 0, 0],
+      "orientation": {
+        "axis": [1, 0, 0],
+        "angle": 0
+      },
+      "children": [],
+      "components": [
+        {
+          "$type": "Mesh",
+          "mesh_id": "pawn"
+        },
+        {
+          "$type": "Material",
+          "material_id": "pawn_material"
+        }
+      ]
+    }
+  ],
+  "actors": [
+    {
+      "tag": "DIRECTIONAL_LIGHT",
+      "enabled": true,
+      "position": [0, 0, 0],
+      "orientation": {
+        "axis": [1, 0, 0],
+        "angle": 0
+      },
+      "components": [
+        {
+          "$type": "DirectionalLight"
+        }
+      ]
+    },
+    {
+      "tag": "CAMERA",
+      "enabled": true,
+      "position": [0, 0, 5],
+      "orientation": {
+        "axis": [1, 0, 0],
+        "angle": 0
+      },
+      "components": [
+        {
+          "$type": "Camera"
+        }
+      ]
+    },
+    {
+      "tag": "pawn_0",
+      "enabled": true,
+      "scale": [1, 1, 1],
+      "position": [0, 1, 0],
+      "orientation": {
+        "axis": [1, 0, 0],
+        "angle": 90
+      },
+      "children": [],
+      "components": [
+        {
+          "$type": "Mesh",
+          "mesh_id": "pawn"
+        },
+        {
+          "$type": "Material",
+          "material_id": "pawn_material"
+        }
+      ]
+    },
+    {
+      "tag": "floor",
+      "enabled": true,
+      "scale": [100, 1, 100],
+      "position": [0, -3, 0],
+      "orientation": {
+        "axis": [1, 0, 0],
+        "angle": 0
+      },
+      "components": [
+        {
+          "$type": "Mesh",
+          "mesh_id": "cube"
+        },
+        {
+          "$type": "Material",
+          "material_id": "floor"
+        }
+      ]
+    },
+    {
+      "tag": "wall",
+      "enabled": true,
+      "scale": [1, 1, 1],
+      "position": [5, 0, -5],
+      "orientation": {
+        "axis": [1, 0, 0],
+        "angle": 0
+      },
+      "components": [
+        {
+          "$type": "Mesh",
+          "mesh_id": "cube"
+        },
+        {
+          "$type": "Material",
+          "material_id": "floor"
+        },
+        {
+          "$type": "BoxCollider",
+          "AutoGenerate": true
+        }
+      ]
+    },
+    {
+      "tag": "monkey_0",
+      "enabled": true,
+      "scale": [1, 1, 1],
+      "position": [-5, 0, -5],
+      "orientation": {
+        "axis": [1, 0, 0],
+        "angle": 0
+      },
+      "components": [
+        {
+          "$type": "Mesh",
+          "mesh_id": "monkey"
+        },
+        {
+          "$type": "Material",
+          "material_id": "pawn_material"
+        }
+      ]
+    }
+  ]
 }

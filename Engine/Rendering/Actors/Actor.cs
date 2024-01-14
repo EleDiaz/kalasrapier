@@ -38,6 +38,11 @@ public class Actor
 
         Transform = Matrix4.CreateScale(scale) * Matrix4.CreateFromAxisAngle(axis, actorData.Orientation.Angle) *
                     Matrix4.CreateTranslation(position);
+
+        foreach (var componentData in actorData.Components) {
+            Console.WriteLine("Component: " + componentData.GetType());
+            AddComponent(componentData.BuildComponent(this));
+        }
     }
 
     public void SetParent(Actor parent)

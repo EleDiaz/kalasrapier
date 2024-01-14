@@ -23,6 +23,7 @@ public class DefaultPipeline : RenderPipeline
     const string VertexShader = "Shaders/material_vert.glsl";
     const string FragmentShader = "Shaders/material_frag.glsl";
 
+    private Texture _defaultTexture;
     private DirectionalLight? _directionalLight;
     private Vector3 _defaultColor = new(1, 1, 1);
 
@@ -38,6 +39,11 @@ public class DefaultPipeline : RenderPipeline
 
     public override void Setup(IEnumerable<Actor> actors, Director director)
     {
+        director.MaterialManager.AddTexture("default", "Textures/default.png");
+        director.MaterialManager.LoadTexture("default");
+        _defaultTexture = director.MaterialManager.GetTexture("default");
+
+
         uint[] indices;
         float[] vertices;
         foreach (var actor in actors)
@@ -78,11 +84,10 @@ public class DefaultPipeline : RenderPipeline
         Shader.SetMatrix4("view", camera.GetViewMatrix());
         Shader.SetMatrix4("projection", camera.GetProjectionMatrix());
 
-        /*
         Shader.SetVector3("light_direction", _directionalLight.Direction);
         Shader.SetVector3("light_color", _directionalLight.Color);
-        Shader.SetFloat("light_intensity", _directionalLight.Intensity);
-        */
+        // Shader.SetFloat("light_intensity", _directionalLight.Intensity);
+        Shader.SetFloat("ambient", 0.1f);
 
         foreach (var actor in actors)
         {
@@ -95,8 +100,11 @@ public class DefaultPipeline : RenderPipeline
             }
 
             renderer.SetActiveMesh();
-            Shader.SetMatrix4("model", actor.GetWorldTransform());
-
+            var worldTransform = actor.GetWorldTransform();
+            Shader.SetMatrix4("model", worldTransform);
+            // https://paroj.github.io/gltut/Illumination/Tut09%20Normal%20Transformation.html
+            Shader.SetMatrix4("normal_transform_matrix", Matrix4.Transpose(Matrix4.Invert(worldTransform)));
+            
             Shader.SetVector3("diffuse_color", _defaultColor);
 
             var materialsAmount = Math.Min(material.Slots.Count, renderer.Slots?.Length ?? 0);
@@ -105,7 +113,13 @@ public class DefaultPipeline : RenderPipeline
             {
                 var indexSlot = renderer!.Slots![i];
                 var materialSlot = material.Slots[i];
-                materialSlot.BaseTexture?.Use(TextureUnit.Texture0);
+                if (materialSlot.BaseTexture is not null) {
+                    materialSlot.BaseTexture?.Use(TextureUnit.Texture0);
+                }
+                else {
+                    // I'm lazy so let's keep 1 shader for those things
+                    _defaultTexture.Use(TextureUnit.Texture0);
+                }
                 Shader.SetVector3("diffuse_color", materialSlot.DiffuseColor);
                 GL.DrawArrays(PrimitiveType.Triangles, (int)indexSlot.Start, (int)indexSlot.Offset);
             }
