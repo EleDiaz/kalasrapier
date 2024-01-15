@@ -87,7 +87,7 @@ public class DefaultPipeline : RenderPipeline
         Shader.SetVector3("light_direction", _directionalLight.Direction);
         Shader.SetVector3("light_color", _directionalLight.Color);
         // Shader.SetFloat("light_intensity", _directionalLight.Intensity);
-        Shader.SetFloat("ambient", 0.1f);
+        Shader.SetVector3("ambient", new Vector3(0.3f, 0.3f, 0.3f));
 
         foreach (var actor in actors)
         {

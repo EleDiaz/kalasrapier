@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Kalasrapier.Engine.Rendering;
 using Kalasrapier.Engine.Rendering.Components;
@@ -53,6 +54,7 @@ public record MeshData
         var vertexList = new List<Vector3>();
         for (int i = 0; i < VertexData.Length; i += 3)
         {
+            // TODO: 266 mb of memory allocation here. Maybe there something wrong somewhere with this. (Collisions?)
             vertexList.Add(new Vector3(VertexData[i], VertexData[i + 1], VertexData[i + 2]));
         }
 

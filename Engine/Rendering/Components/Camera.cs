@@ -16,7 +16,7 @@ public class Camera : Component
 {
     // The field of view of the camera (radians)
     private readonly float _fov = MathHelper.PiOver2;
-    private float AspectRatio { get; }
+    private float AspectRatio { get; set; }
 
     public Camera(Actor actor) : base(actor)
     {

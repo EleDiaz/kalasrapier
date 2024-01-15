@@ -30,8 +30,8 @@ public record AabbBoundingBox(Vector3 Min = new(), Vector3 Max = new())
 public class BoxColliderData : ComponentData
 {
     public bool AutoGenerate = true;
-    public Vector3? Min { get; set; }
-    public Vector3? Max { get; set; }
+    public float[]? Min { get; set; }
+    public float[]? Max { get; set; }
     
     public override Component BuildComponent(Actor actor)
     {
@@ -43,7 +43,7 @@ public class BoxColliderData : ComponentData
         }
         else
         {
-            return new BoxCollider(actor, new AabbBoundingBox(Max!.Value, Min!.Value));
+            return new BoxCollider(actor, new AabbBoundingBox(new Vector3(Min![0], Min[1], Min[2]), new Vector3(Max![0], Max[1], Max[2])));
         }
     }
 }

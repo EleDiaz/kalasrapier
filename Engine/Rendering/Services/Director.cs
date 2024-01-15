@@ -78,20 +78,21 @@ public class Director
 
     public void Start()
     {
+        foreach (var actor in ActorManager.GetActors().Where(actor => actor.Enabled))
+        {
+            actor.Start();
+        }
         // Pre-init all actors that belong to a render pipeline even those disabled
         foreach (var renderPipeline in _renderPipelines)
         {
             renderPipeline.Setup(ActorManager.GetActors(), this);
         }
 
-        foreach (var actor in ActorManager.GetActors().Where(actor => actor.Enabled))
-        {
-            actor.Start();
-        }
     }
 
     public void Update(double deltaTime)
     {
+        CollisionManager.CheckCollisions();
         foreach (var actor in ActorManager.GetActors().Where(actor => actor.Enabled))
         {
             actor.Update(deltaTime);

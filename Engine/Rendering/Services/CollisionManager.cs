@@ -43,21 +43,25 @@ public class CollisionManager
 
     public void CheckCollisions()
     {
-        var actors = _actorManager.GetActors().Where(actor => actor.GetComponent<Collider>() is not null)
+        var actors = _actorManager.GetActors().Where(actor => actor.GetComponent<BoxCollider>() is not null)
             .Select((actor, i) => (actor, i)).ToList();
         if (actors.Count < 2)
             return;
 
-        foreach (var (actor1, i) in actors)
+        for (int i = 0; i < actors.Count - 1; i++)
         {
-            foreach (var (actor2, _) in actors.GetRange(i + 1, actors.Count))
+            for (int j = i + 1; j < actors.Count; j++)
             {
+                var actor1 = actors[i].actor;
+                var actor2 = actors[j].actor;
+                
                 if (CheckCollision(actor1, actor2))
                 {
                     CollisionDetected(actor1, actor2);
                 }
             }
         }
+
 
         foreach (var (actorId1, actorId2) in _collisionsLate)
         {
@@ -74,8 +78,8 @@ public class CollisionManager
 
     private static bool CheckCollision(Actor actor1, Actor actor2)
     {
-        var c1 = actor1.GetComponent<Collider>();
-        var c2 = actor2.GetComponent<Collider>();
+        var c1 = actor1.GetComponent<BoxCollider>() as Collider;
+        var c2 = actor2.GetComponent<BoxCollider>() as Collider;
         if (c1 is null || c2 is null)
         {
             return false;
