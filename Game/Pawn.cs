@@ -41,7 +41,6 @@ namespace Kalasrapier.Game
 
         public override void Update(double deltaTime)
         {
-            _boxCollider!.Recalculate();
             _controller!.UpdateState(Director.Window);
 
             var movement = _controller.GetMovement();
