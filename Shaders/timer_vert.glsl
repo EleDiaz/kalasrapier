@@ -1,5 +1,4 @@
-#version 450
-
+#version 130
 
 void main() {
     vec3 position = vec3(0.0);
